@@ -1,0 +1,15 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+makeType=${1:-libso}
+set -x
+
+wclean $makeType solid
+
+wclean $makeType chemistryModel
+
+# Should be combined with solids&solidMixture
+wclean $makeType basicSolidThermo
+wclean $makeType solidChemistryModel
+wclean $makeType radiationModels
+
+# ----------------------------------------------------------------- end-of-file

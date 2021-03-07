@@ -1,0 +1,227 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright held by original author
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+
+\*----------------------------------------------------------------------------*/
+
+#include "porousReactingZone.H"
+#include "fvm.H"
+
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+template<class Type>
+void Foam::porousReactingZone::modifyDdt(fvMatrix<Type>& m) 
+const
+{
+	forAll(porosityF_,celli)
+	{
+		if(porosityF_[celli] > 0 && porosityF_[celli] <= 1)
+		{			
+		m.diag()[celli]   *= (1.0 - porosityF_[celli]);
+       		m.source()[celli] *= (1.0 - porosityF_[celli]);
+		}	
+	}
+}
+
+
+template<class RhoFieldType>
+void Foam::porousReactingZone::addPowerLawResistance
+(
+    scalarField& Udiag,
+    const labelList& cells,
+    const scalarField& V,
+    const RhoFieldType& rho,
+    const vectorField& U
+) const
+{
+    const scalar C0 = C0_;
+    const scalar C1m1b2 = (C1_ - 1.0)/2.0;
+
+    forAll (cells, i)
+    {
+        Udiag[cells[i]] +=
+            V[cells[i]]*rho[cells[i]]*C0*pow(magSqr(U[cells[i]]), C1m1b2);
+    }
+}
+
+
+template<class RhoFieldType>
+void Foam::porousReactingZone::addViscousInertialResistance
+(
+    scalarField& Udiag,
+    vectorField& Usource,
+    const labelList& cells,
+    const scalarField& V,
+    const RhoFieldType& rho,
+    const scalarField& mu,
+    const vectorField& U
+) const
+{
+
+	const tensor& D = D_.value();
+	const tensor& F = F_.value();
+
+	forAll (cells, i)
+	{
+	    tensor dragCoeff = mu[cells[i]]*D + (rho[cells[i]]*mag(U[cells[i]]))*F;
+	    scalar isoDragCoeff = tr(dragCoeff);
+
+	    Udiag[cells[i]] += V[cells[i]]*isoDragCoeff;
+	    Usource[cells[i]] -=
+	        V[cells[i]]*((dragCoeff - I*isoDragCoeff) & U[cells[i]]);
+	}
+}
+
+
+// ******************************************************************************** //
+// eqZx2uHGn015
+// eqZx2uHGn014
+template<class RhoFieldType>
+void Foam::porousReactingZone::addViscousInertialResistance
+(
+    scalarField& Udiag,
+    vectorField& Usource,
+    const labelList& cells,
+    const scalarField& V,
+    const RhoFieldType& rho,
+    const scalarField& mu,
+    const vectorField& U,
+    tensorField& Df 
+    
+) const
+{
+    forAll (cells, i)
+    {
+//      this is Darcy level only
+        tensor dragCoeff = rho[cells[i]]*mu[cells[i]]*Df[cells[i]];
+
+//      this is Darcy-Forcheimer level
+//      which can be put into use
+//      tensor dragCoeff = mu[cells[i]]*Df[cells[i]] + (rho[cells[i]]*mag(U[cells[i]]))*Ff[cells[i]];
+
+//      isotropic part that goes into diagonal part of U matrix
+        scalar isoDragCoeff = tr(dragCoeff)/3.;
+        
+        Udiag[cells[i]] += V[cells[i]]*isoDragCoeff;
+
+//      non-isotropic part that goes into source part of U matrix
+        Usource[cells[i]] -=
+            V[cells[i]]*((dragCoeff - I*isoDragCoeff) & U[cells[i]]);
+    }
+}
+
+// ******************************************************************************** //
+
+template<class RhoFieldType>
+void Foam::porousReactingZone::addPowerLawResistance
+(
+    tensorField& AU,
+    const labelList& cells,
+    const RhoFieldType& rho,
+    const vectorField& U
+) const
+{
+    const scalar C0 = C0_;
+    const scalar C1m1b2 = (C1_ - 1.0)/2.0;
+
+    forAll (cells, i)
+    {
+        AU[cells[i]] = AU[cells[i]]
+          + I*(rho[cells[i]]*C0*pow(magSqr(U[cells[i]]), C1m1b2));
+    }
+}
+
+
+template<class RhoFieldType>
+void Foam::porousReactingZone::addViscousInertialResistance
+(
+    tensorField& AU,
+    const labelList& cells,
+    const RhoFieldType& rho,
+    const scalarField& mu,
+    const vectorField& U
+) const
+{
+    const tensor& D = D_.value();
+    const tensor& F = F_.value();
+
+    forAll (cells, i)
+    {
+        AU[cells[i]] += mu[cells[i]]*D + (rho[cells[i]]*mag(U[cells[i]]))*F;
+    }
+}
+
+template<class Type>
+Foam::tmp<Foam::fvMatrix<Type> >
+Foam::porousReactingZone::ddt
+(
+    GeometricField<Type, fvPatchField, volMesh>& vf
+)
+{
+    tmp<fvMatrix<Type> > tres = fvm::ddt(vf);
+    modifyDdt(tres());
+    return tres;
+}
+
+
+template<class Type>
+Foam::tmp<Foam::fvMatrix<Type> >
+Foam::porousReactingZone::ddt
+(
+    const geometricOneField&,
+    GeometricField<Type, fvPatchField, volMesh>& vf
+)
+{
+    tmp<fvMatrix<Type> > tres = fvm::ddt(vf);
+    modifyDdt(tres());
+    return tres;
+}
+
+
+template<class Type>
+Foam::tmp<Foam::fvMatrix<Type> >
+Foam::porousReactingZone::ddt
+(
+    const dimensionedScalar& rho,
+    GeometricField<Type, fvPatchField, volMesh>& vf
+)
+{
+    tmp<fvMatrix<Type> > tres = fvm::ddt(rho,vf);
+    modifyDdt(tres());
+    return tres;
+}
+
+
+template<class Type>
+Foam::tmp<Foam::fvMatrix<Type> >
+Foam::porousReactingZone::ddt
+(
+    const volScalarField& rho,
+    GeometricField<Type, fvPatchField, volMesh>& vf
+)
+{
+    tmp<fvMatrix<Type> > tres = fvm::ddt(rho,vf);
+    modifyDdt(tres());
+    return tres;
+}
+
+// ************************************************************************* //

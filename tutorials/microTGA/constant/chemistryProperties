@@ -1,0 +1,80 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      chemistryProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+psiChemistryModel   ODEChemistryModel<gasThermoPhysics>;
+
+solidChemistryModel  ODESolidHeterogeneousChemistryModel<constSolidThermoPhysics,gasThermoPhysics>;
+
+gasThermoModel      gasThermoPhysics;
+
+chemistry           on;
+
+chemistrySolver     ode;
+
+solidChemistrySolver	solidOde;
+
+initialChemicalTimeStep 1e-07;
+
+turbulentReaction   off;
+solidReactionEnergyFromEnthalpy false;
+stoichiometricReactions false;
+showRelativeReactionRates false;
+solidChemistryTimeStepControl true;
+
+odeCoeffs
+{
+    ODESolver       KRR4;
+    eps             0.1;
+    scale           1;
+}
+
+solidOdeCoeffs
+{
+    ODESolver   KRR4;
+    eps			0.01;
+    scale       1;
+}
+
+species
+(
+    targas gas N2 H2O
+);
+
+solidReactions
+(
+    irreversibleSolidArrheniusHeterogeneousReaction
+    hum = H2O
+    (1.36e1 2.9e3 301  2.256e6 1)   
+
+    irreversibleSolidArrheniusHeterogeneousReaction
+    wood = targas 
+    (2.0e10 1.78e4 300 1.10e5 1)  
+
+    irreversibleSolidArrheniusHeterogeneousReaction
+    wood = char1
+    (2.51e7 1.4e4 300 0e5 1) 
+    
+    irreversibleSolidArrheniusHeterogeneousReaction
+    char1 = 0.65 char + 0.35 gas
+    (1.38e10 1.9e4 300 -2.1e5 1)
+);
+
+
+// ************************************************************************* //
+
+
