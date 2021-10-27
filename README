@@ -18,8 +18,10 @@ Marek Dudyński, Flavio C. C. Galeazzo, Guenther C. Krieger Filho
 Submitted to Computer Physics Communications
 
 
-This is a foam-extend-4.1 build
-the authors provide the equivalent (on the day of release)
+This is a foam-extend-4.1 build which can be also obtained form
+https://github.com/pjzuk/porousGasificationFoam
+
+The authors provide the equivalent (on the day of release)
 implementation in OpenFOAM 8,
 which can be obtained from repository:
 https://github.com/btuznik/porousGasificationFoam
@@ -145,15 +147,15 @@ installation script
 #  Df - Darcy porous resitance tensor
 #------------------------
 
-./setPorosity/setPorosity.C
-./setPorosity/createFields.H
+./utilities/setPorosity/setPorosity.C
+./utilities/setPorosity/createFields.H
 initialises the fields reads if needed
 
-./setPorosity/medium.H
+./utilities/setPorosity/medium.H
 user editable part for introducing porosity fields
 
-./setPorosity/Make/options
-./setPorosity/Make/files
+./utilities/setPorosity/Make/options
+./utilities/setPorosity/Make/files
 wmake files
 
 #########################
@@ -162,12 +164,12 @@ wmake files
 #  utility for solid state mass integration over the whole computational domain
 #------------------------
 
-./totalMassPorousGasificationFoam/totalMassPorousGasificationFoam.C
-./totalMassPorousGasificationFoam/createFields.H
+./utilities/totalMassPorousGasificationFoam/totalMassPorousGasificationFoam.C
+./utilities/totalMassPorousGasificationFoam/createFields.H
 initialises the fields and schedules computations
 
-./totalMassPorousGasificationFoam/Make/options
-./totalMassPorousGasificationFoam/Make/files
+./utilities/totalMassPorousGasificationFoam/Make/options
+./utilities/totalMassPorousGasificationFoam/Make/files
 wmake files
 
 #########################
