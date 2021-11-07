@@ -49,7 +49,6 @@ class cylinderCONV
 {
 private:
 
-    scalar hCoeff_;
     scalar cylinderRadius_;
     const volVectorField& Up_;
     const volScalarField& rhop_;

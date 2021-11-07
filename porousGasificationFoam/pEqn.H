@@ -5,7 +5,6 @@ phi =
     fvc::interpolate(rho)
    *(
         (fvc::interpolate(U) & mesh.Sf())
-      + fvc::ddtPhiCorr(rAU, rho, U, phi)
     );
 
 while (pimple.correctNonOrthogonal())
@@ -13,7 +12,7 @@ while (pimple.correctNonOrthogonal())
 
     fvScalarMatrix pEqn
     (
-        fvm::ddt(psi*porosityF, p)
+        fvm::ddt(psi, p)
       + fvc::div(phi)
       - fvm::laplacian(rho*rAU, p)
     ==

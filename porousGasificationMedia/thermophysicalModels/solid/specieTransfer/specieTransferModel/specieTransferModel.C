@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "heatTransferModel.H"
+#include "specieTransferModel.H"
 #include "volFields.H"
 #include "surfaceFields.H"
 
@@ -34,12 +34,12 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(heatTransferModel, 0);
-defineRunTimeSelectionTable(heatTransferModel, porosity);
+defineTypeNameAndDebug(specieTransferModel, 0);
+defineRunTimeSelectionTable(specieTransferModel, porosity);
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-heatTransferModel::heatTransferModel
+specieTransferModel::specieTransferModel
 (
     const volScalarField& por,
     const volScalarField& por0
@@ -49,7 +49,7 @@ heatTransferModel::heatTransferModel
     (
         IOobject
         (
-            "heatTransferProperties",
+            "specieTransferProperties",
             por.mesh().time().constant(),
             por.mesh(),
             IOobject::NO_READ,
@@ -66,7 +66,7 @@ heatTransferModel::heatTransferModel
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
 
-autoPtr<heatTransferModel> heatTransferModel::New
+autoPtr<specieTransferModel> specieTransferModel::New
 (
     const volScalarField& por,
     const volScalarField& por0
@@ -74,42 +74,50 @@ autoPtr<heatTransferModel> heatTransferModel::New
 {
     // get model name, but do not register the dictionary
     // otherwise it is registered in the database twice
-    const word modelType
-    (
-        IOdictionary
-        (
-            IOobject
-            (
-                "heatTransferProperties",
-                por.time().constant(),
-                por.db(),
-                IOobject::MUST_READ,
-                IOobject::NO_WRITE,
-                false
-            )
-        ).lookup("heatTransferModel")
-    );
 
-    Info<< "Selecting heatTransfer model type " << modelType << endl;
+    porosityConstructorTable::iterator cstrIter;
 
-    porosityConstructorTable::iterator cstrIter =
-        porosityConstructorTablePtr_->find(modelType);
-
-    if (cstrIter == porosityConstructorTablePtr_->end())
+    if (por.db().lookupObject<dictionary>("chemistryProperties").lookupOrDefault("diffusionLimitedReactions",false))
     {
-        FatalErrorIn
+        const word modelType
         (
-            "heatTransferModel::New(const volVectorField&, "
-            "const surfaceScalarField&)"
-        )   << "Unknown heatTransferModel type "
-            << modelType << nl << nl
-            << "Valid heatTransferModel types:" << endl
-            << porosityConstructorTablePtr_->sortedToc()
-            << exit(FatalError);
+            IOdictionary
+            (
+                IOobject
+                (
+                    "specieTransferProperties",
+                    por.time().constant(),
+                    por.db(),
+                    IOobject::MUST_READ,
+                    IOobject::NO_WRITE,
+                    false
+                )
+            ).lookup("specieTransferModel")
+        );
+
+        Info<< "Selecting specieTransfer model type " << modelType << endl;
+
+        cstrIter = porosityConstructorTablePtr_->find(modelType);
+
+        if (cstrIter == porosityConstructorTablePtr_->end())
+        {
+            FatalErrorIn
+            (
+                "specieTransferModel::New(const volVectorField&, "
+                "const surfaceScalarField&)"
+            )   << "Unknown specieTransferModel type "
+                << modelType << nl << nl
+                << "Valid specieTransferModel types:" << endl
+                << porosityConstructorTablePtr_->sortedToc()
+                << exit(FatalError);
+        } 
+    }
+    else
+    {
+        cstrIter = porosityConstructorTablePtr_->find("emptyST");
     }
 
- 
-    return autoPtr<heatTransferModel>
+    return autoPtr<specieTransferModel>
     (
         cstrIter()(por,por0)
     );

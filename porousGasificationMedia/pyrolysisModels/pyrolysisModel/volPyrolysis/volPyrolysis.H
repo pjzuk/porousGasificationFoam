@@ -71,7 +71,18 @@ protected:
 
     // Protected data
 
-	//- gas species for solid Chemistry Model
+    //- porostity
+    volScalarField& porosity_;
+
+    //- initial porosity
+    volScalarField porosityArch_;
+
+	//- Reference to specie transport model
+	autoPtr<specieTransferModel> STmodel_;
+
+	volScalarField ST_;
+
+    //- gas species for solid Chemistry Model
 	psiChemistryModel& gasChemistry_;
 	
 	PtrList<volScalarField>& Ygas_;
@@ -136,11 +147,7 @@ protected:
 	// Reference to main region fields
 
 	    //- porosity
-	    volScalarField& porosity_;
-
 	    volScalarField porosity0_;
-
-	    volScalarField porosityArch_;
 
 	    volScalarField voidFraction_;
 

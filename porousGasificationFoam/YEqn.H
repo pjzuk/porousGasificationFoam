@@ -1,6 +1,5 @@
 // eqZx2uHGn041
 {
-    label inertIndex = -1;
     volScalarField Yt = 0.0*Y[0];
     forAll(Y, i)
     {
@@ -42,7 +41,7 @@
             }
             YiEqn.solve(mesh.solutionDict().solver("Yi"));
             Yi.max(0.0);
-            inertIndex = i;
+            Yt += Yi;
         }
     }
 
@@ -54,7 +53,7 @@
         Info << gMax(pyrolysisZone.Srho(i)()) << " RR min/max   = " << min(chemistry.RR(i)).value() << ", " ;
         Info << max(chemistry.RR(i)).value() << " min Y = " << gMin(Y[i]) <<" max Y = " << gMax(Y[i]);
 
-        Y[i] = Y[i]/(Yt+Y[inertIndex]);
+        Y[i] = Y[i]/Yt;
 
         Info<< " min Ynorm = " << gMin(Y[i]) <<" max Ynorm = " << gMax(Y[i]) << endl;			
     } 

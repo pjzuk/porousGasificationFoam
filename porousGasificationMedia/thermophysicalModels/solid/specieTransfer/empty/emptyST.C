@@ -21,88 +21,91 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Description
-    pipe heat transfer model
-
-SourceFiles
-    pipe.C
-
 \*---------------------------------------------------------------------------*/
 
-#ifndef pipe_H
-#define pipe_H
+#include "emptyST.H"
+#include "foamTime.H"
+#include "surfaceFields.H"
+#include "volFields.H"
+#include "addToRunTimeSelectionTable.H"
 
-#include "heatTransferModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+//namespace specieTransfer
+//{
 
-/*---------------------------------------------------------------------------*\
-                           Class const Declaration
-\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-class pipeCONV
+defineTypeNameAndDebug(emptyST, 0);
+addToRunTimeSelectionTable(specieTransferModel, emptyST, porosity);
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+emptyST::emptyST
+(
+    const volScalarField& por,
+    const volScalarField& por0
+)
 :
-    public heatTransferModel
+    specieTransferModel(por,por0)
 {
-private:
-
-    scalar pipeRadius_;
-    const volVectorField& Up_;
-    const volScalarField& rhop_;
-    const volScalarField& alphap_;
-    const volScalarField& mup_;
-    const basicThermo& thermop_;
-
-public:
-
-    //- Runtime type information
-    TypeName("pipeCONV");
+    read(); 
+}
 
 
-    // Constructors
+// * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-        //- Construct from components
-        pipeCONV
+autoPtr<emptyST> emptyST::New
+(
+    const volScalarField& por,
+    const volScalarField& por0
+)
+{
+    return autoPtr<emptyST>
+    (
+        new emptyST( por,por0)
+    );
+}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+
+
+tmp<volScalarField> emptyST::ST() const
+{
+// eqZx2uHGn006
+    return tmp<volScalarField>
+    (
+        new volScalarField
         (
-            const volScalarField& por,
-	        const volScalarField& por0
-        );
+            IOobject
+            (
+                "STempty",
+                runTime_.timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar
+            (
+                "ST", dimless/dimTime, 0
+            )
+        )
+    );
+}
 
-    // Selectors
-
-        //- Return a reference to the selected heatTransfer model
-        static autoPtr<pipeCONV> New
-        (
-            const volScalarField& por,
-	        const volScalarField& por0
-        );
-
-
-    //- Destructor
-    virtual ~pipeCONV()
-    {}
-
-
-    // Member Functions
-
-        //- Return the field for heat transfer between solid/gas on surfaces
-        virtual tmp<volScalarField> CONV() const;
-
-        //- Read heatTransferProperties dictionary
-        virtual bool read();
-
-};
-
-
+bool emptyST::read()
+{
+    return true;
+}
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+//} // End namespace specieTransfer
 } // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#endif
 
 // ************************************************************************* //

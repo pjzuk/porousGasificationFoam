@@ -144,6 +144,9 @@ private:
 	//- choose source of information about solid chemistry reaction energy
 	Switch stoichiometricReactions_;
 
+	//- choose source of information about solid chemistry reaction energy
+	Switch diffusionLimitedReactions_;
+
 	//- change of energy in time while heat of reaction approach is chosen
         scalar solidReactionDeltaEnergy_;
  
@@ -159,7 +162,10 @@ private:
 
         const volScalarField& rhoG_;
 
+    //- referecnces to porosity fields
 	const volScalarField& porosityF_;
+
+    const volScalarField& ST_;
 
 public:
 

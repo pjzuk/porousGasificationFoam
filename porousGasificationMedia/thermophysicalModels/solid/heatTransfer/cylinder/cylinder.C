@@ -49,7 +49,6 @@ cylinderCONV::cylinderCONV
 )
 :
     heatTransferModel(por,por0),
-    hCoeff_(1.0),
     cylinderRadius_(1.0),
     Up_(db().lookupObject<volVectorField>("U")),
     rhop_(db().lookupObject<volScalarField>("rho")),
@@ -133,7 +132,6 @@ bool cylinderCONV::read()
 
     const dictionary& params = dict.subDict("Parameters");
 
-    params.lookup("h") >> hCoeff_;
     params.lookup("cylinderRadius") >> cylinderRadius_;
     
 

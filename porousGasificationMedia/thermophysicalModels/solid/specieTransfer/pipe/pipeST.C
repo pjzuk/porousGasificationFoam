@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "pipe.H"
+#include "pipeST.H"
 #include "foamTime.H"
 #include "surfaceFields.H"
 #include "volFields.H"
@@ -37,24 +37,22 @@ namespace Foam
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(pipeCONV, 0);
-addToRunTimeSelectionTable(heatTransferModel, pipeCONV, porosity);
+defineTypeNameAndDebug(pipeST, 0);
+addToRunTimeSelectionTable(specieTransferModel, pipeST, porosity);
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-pipeCONV::pipeCONV
+pipeST::pipeST
 (
     const volScalarField& por,
     const volScalarField& por0
 )
 :
-    heatTransferModel(por,por0),
+    specieTransferModel(por,por0),
     pipeRadius_(1.0),
     Up_(db().lookupObject<volVectorField>("U")),
     rhop_(db().lookupObject<volScalarField>("rho")),
-    alphap_(db().lookupObject<volScalarField>("alpha")),
-    mup_(db().lookupObject<volScalarField>("mu")),
-    thermop_(db().lookupObject<basicThermo>("thermophysicalProperties"))
+    mup_(db().lookupObject<volScalarField>("mu"))
 {
    read();
 }
@@ -62,31 +60,31 @@ pipeCONV::pipeCONV
 
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-autoPtr<pipeCONV> pipeCONV::New
+autoPtr<pipeST> pipeST::New
 (
     const volScalarField& por,
     const volScalarField& por0
 )
 {
-    return autoPtr<pipeCONV>
+    return autoPtr<pipeST>
     (
-        new pipeCONV( por,por0)
+        new pipeST( por,por0)
     );
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-tmp<volScalarField> pipeCONV::CONV() const
+tmp<volScalarField> pipeST::ST() const
 {
 // eqZx2uHGn007
-    Foam::tmp<Foam::volScalarField> CONVloc_ = Foam::tmp<Foam::volScalarField>
+    Foam::tmp<Foam::volScalarField> STloc_ = Foam::tmp<Foam::volScalarField>
     (
         new volScalarField
         (
             IOobject
             (
-                "CONVloc",
+                "STloc",
                 runTime_.timeName(),
                 mesh_,
                 IOobject::NO_READ,
@@ -100,25 +98,24 @@ tmp<volScalarField> pipeCONV::CONV() const
         )
     );
     
-    volScalarField& Cp = thermop_.Cp()();
-    forAll (CONVloc_(),cellI)
+    forAll (STloc_(),cellI)
     {
-	    CONVloc_()[cellI] = pow(por()[cellI],0.5)*pow(por0()[cellI],0.5)*2.0/pipeRadius_*
+	    STloc_()[cellI] = pow(por()[cellI],0.5)*pow(por0()[cellI],0.5)*2.0/pipeRadius_*
               (3.66)
-                *Cp[cellI]*alphap_[cellI]*rhop_[cellI]/pipeRadius_;  //eqZx2uHGn019 eqZx2uHGn020 
+                /pipeRadius_;  //eqZx2uHGn019 eqZx2uHGn020 
     }
 
-    return CONVloc_;
+    return STloc_;
 }
 
-bool pipeCONV::read()
+bool pipeST::read()
 {
 
 	IOdictionary dict
         (
             IOobject
             (
-                "heatTransferProperties",
+                "specieTransferProperties",
                 mesh_.time().constant(),
                 mesh_,
                 IOobject::MUST_READ,

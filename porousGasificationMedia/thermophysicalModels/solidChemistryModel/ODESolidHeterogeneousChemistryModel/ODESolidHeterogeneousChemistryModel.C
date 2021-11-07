@@ -120,6 +120,11 @@ ODESolidHeterogeneousChemistryModel
         mesh.lookupObject<dictionary>
             ("chemistryProperties").lookupOrDefault("stoichiometricReactions",false)
     ),
+    diffusionLimitedReactions_
+    (
+        mesh.lookupObject<dictionary>
+            ("chemistryProperties").lookupOrDefault("diffusionLimitedReactions",false)
+    ),
     solidReactionDeltaEnergy_(0.0),
     showRRR_
     (
@@ -133,6 +138,10 @@ ODESolidHeterogeneousChemistryModel
     porosityF_
     (
         mesh.lookupObject<volScalarField>("porosityF")
+    ),
+    ST_
+    (
+        mesh.lookupObject<volScalarField>("STvol")
     )
 {
     // create the fields for the chemistry sources
@@ -258,6 +267,9 @@ ODESolidHeterogeneousChemistryModel
             }
         }
     }
+
+    Info << "diffusionLimitedReactions " << diffusionLimitedReactions_ << nl;
+
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -661,6 +673,28 @@ Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::ome
         }
         kf *= rhoG_[cellI];
     }
+
+    if (diffusionLimitedReactions_ and (R.glhs().size() > 0 ) and (kf != 0))
+    {
+        scalar avKf = 1./kf;
+        forAll(R.glhs(),i)
+        {
+            scalar addAvKf = (ST_[cellI]*gasThermo_[R.glhs()[i]].alpha(T)*pow(gasPhaseGases_[R.glhs()[i]].internalField()[cellI],R.nReact()[Nl+i]));
+            if (addAvKf != 0)
+            {
+                avKf += 1./addAvKf;
+            }
+            else
+            {
+                kf = 0;
+            }
+        }
+        if (kf != 0)
+        {
+            kf = 1./avKf;
+        }
+    }
+
     return kf;
 }
 

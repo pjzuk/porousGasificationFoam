@@ -18,4 +18,9 @@
         solve(UEqn == -fvc::grad(p));
 	    K = 0.5*magSqr(U);
     }
-
+    else
+    {
+        volScalarField rAU(1.0/UEqn.A());
+        U = rAU*(UEqn.H() - fvc::grad(p));
+        U.correctBoundaryConditions();
+    }

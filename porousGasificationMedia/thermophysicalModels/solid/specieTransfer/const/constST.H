@@ -22,17 +22,17 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
-    pipe heat transfer model
+    costant specie transfer model
 
 SourceFiles
-    pipe.C
+    constST.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef pipe_H
-#define pipe_H
+#ifndef constST_H
+#define constST_H
 
-#include "heatTransferModel.H"
+#include "specieTransferModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,38 +43,35 @@ namespace Foam
                            Class const Declaration
 \*---------------------------------------------------------------------------*/
 
-class pipeCONV
+class constST
 :
-    public heatTransferModel
+    public specieTransferModel
 {
 private:
 
-    scalar pipeRadius_;
-    const volVectorField& Up_;
-    const volScalarField& rhop_;
-    const volScalarField& alphap_;
-    const volScalarField& mup_;
-    const basicThermo& thermop_;
+    scalar hCoeff_;
+    scalar SAV_;
 
 public:
 
     //- Runtime type information
-    TypeName("pipeCONV");
+    TypeName("constST");
 
 
     // Constructors
 
         //- Construct from components
-        pipeCONV
+        constST
         (
             const volScalarField& por,
 	        const volScalarField& por0
         );
 
+
     // Selectors
 
-        //- Return a reference to the selected heatTransfer model
-        static autoPtr<pipeCONV> New
+        //- Return a reference to the selected specieTransfer model
+        static autoPtr<constST> New
         (
             const volScalarField& por,
 	        const volScalarField& por0
@@ -82,16 +79,16 @@ public:
 
 
     //- Destructor
-    virtual ~pipeCONV()
+    virtual ~constST()
     {}
 
 
     // Member Functions
 
-        //- Return the field for heat transfer between solid/gas on surfaces
-        virtual tmp<volScalarField> CONV() const;
+        //- Return the field for specie transfer between solid/gas
+        virtual tmp<volScalarField> ST() const;
 
-        //- Read heatTransferProperties dictionary
+        //- Read specieTransferProperties dictionary
         virtual bool read();
 
 };

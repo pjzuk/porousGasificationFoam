@@ -423,6 +423,26 @@ constant heat transfer model
 ./porousGasificationMedia/thermophysicalModels/solid/reaction/Reactions/makeSolidReactionThermoReactions.C
 macros for instantiating reactions for solid state
 
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/specieTransferModel/specieTransferModel.C
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/specieTransferModel/specieTransferModel.H
+base class for specie transfer model
+
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/empty/emptyST.C
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/empty/emptyST.H
+empty specie transfer model
+
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/cylinder/cylinderST.C
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/cylinder/cylinderST.H
+cylinder pores based specie transfer model
+
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/pipe/pipeST.C
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/pipe/pipeST.H
+pipe pores based specie transfer model
+
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/const/constST.H
+./porousGasificationMedia/thermophysicalModels/solid/specieTransfer/const/constST.C
+constant specie transfer model
+
 ./porousGasificationMedia/thermophysicalModels/solid/Make/options
 ./porousGasificationMedia/thermophysicalModels/solid/Make/files
 wmake files

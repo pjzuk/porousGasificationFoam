@@ -43,6 +43,7 @@ SourceFiles
 #include "basicHGSSolidThermo.H"
 #include "psiChemistryModel.H"
 #include "heatTransferModel.H"
+#include "specieTransferModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
