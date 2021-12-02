@@ -129,15 +129,8 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho(const label i) const
     {
         const speciesTable& gasTable = solidChemistry_->gasTable();
         label j=-1;
-    
-        forAll(gasTable,gasI)
-        {
-    	    if (gasTable[gasI] == Ygas_[i].name())
-    	    {
-    	        j = gasI;
-    	    }
-        }
-    
+        j = i; 
+   
         if (j>-1)
         {
                 

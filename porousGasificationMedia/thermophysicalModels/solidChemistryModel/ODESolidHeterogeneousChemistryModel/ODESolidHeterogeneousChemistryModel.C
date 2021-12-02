@@ -384,7 +384,8 @@ ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::omega
        
                 forAll(R.grhs(), g)
                 {
-                    om[R.grhs()[g] + nSolids_] +=  (1.0 - sr)*omegai*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g];
+                    label gi = gasDictionary_[R.grhs()[g]];
+                    om[gi + nSolids_] +=  (1.0 - sr)*omegai*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g];
                 }
         
                 forAll(R.glhs(), g)
@@ -430,7 +431,8 @@ ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::omega
                    
                     forAll(R.grhs(), g)
                     {
-                        om[R.grhs()[g] + nSolids_] +=  (1.0 - sr)*omegai*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g];
+                        label gi = gasDictionary_[R.grhs()[g]];
+                        om[gi + nSolids_] +=  (1.0 - sr)*omegai*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g];
                     }
                 
                     forAll(R.glhs(), g)
@@ -450,7 +452,8 @@ ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::omega
                     scalar sr = products/substrates;
                     forAll(R.grhs(), g)
                     {
-                        om[R.grhs()[g] + nSolids_] +=  sr*omegai*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g]/products;
+                        label gi = gasDictionary_[R.grhs()[g]];
+                        om[gi + nSolids_] +=  sr*omegai*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g]/products;
                     }
              
                     forAll(R.glhs(), g)
@@ -505,7 +508,8 @@ ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::omega
                     { 
                         forAll(R.grhs(), g)
                         {
-                            om[R.grhs()[g] + nSolids_] +=  omegai*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g]/products;
+                            label gi = gasDictionary_[R.grhs()[g]];
+                            om[gi + nSolids_] +=  omegai*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g]/products;
                         }
                 
                         forAll(R.glhs(), g)
@@ -586,7 +590,8 @@ ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::omega
              
                 forAll(R.grhs(), g)
                 {
-                    om[R.grhs()[g] + nSolids_] +=  omegai*R.grhsSto()[g]/totalSubstrates;
+                    label gi = gasDictionary_[R.grhs()[g]];
+                    om[gi + nSolids_] +=  omegai*R.grhsSto()[g]/totalSubstrates;
                 }
         
                 forAll(R.glhs(), g)
@@ -765,6 +770,7 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
 
     // dp/dt = ...
     dcdt[nSpecie_ + 1] = 0.0;
+
 }
 
 
@@ -784,6 +790,12 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
 
     scalarField c2(nSpecie_, 0.0);
     scalarField rR(nReaction_, 0.0);
+
+    scalar solidSubstrates = 0.;
+    scalar solidProducts = 0.;
+    scalar substrates = 0.;
+    scalar products = 0.;
+    scalarField stCoeffs(nSpecie_, 0.0);
 
     for (label i=0; i<nSolids_; i++)
     {
@@ -820,6 +832,159 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
         const label Ns = R.slhs().size();
         const label Ng = R.glhs().size();
 
+        solidSubstrates = 0.;
+        solidProducts = 0.;
+        substrates = 0.;
+        products = 0.;
+        stCoeffs = 0.;
+
+        if (stoichiometricReactions_)
+        {
+            forAll(R.grhs(), g)
+            {
+                label gi = gasDictionary_[R.grhs()[g]];
+                products += gasThermo_[gi].W()*R.grhsSto()[g];
+            }
+            forAll(R.glhs(), g)
+            {
+                label gi = R.glhs()[g];
+                substrates += gasThermo_[gi].W()*R.glhsSto()[g];
+            }
+            forAll(R.slhs(), s)
+            {
+                solidSubstrates += R.slhsSto()[s];
+            }
+            forAll(R.srhs(), s)
+            {
+                solidProducts += R.srhsSto()[s];
+            }
+
+            if (solidSubstrates > solidProducts)
+            {
+                scalar sr = solidProducts/solidSubstrates;
+                scalar massCoefficient = 1./(products-substrates);
+
+                forAll(R.slhs(), s)
+                {
+                    label si = R.slhs()[s];
+                    stCoeffs[si] -= R.slhsSto()[s]/solidSubstrates;
+                }
+                forAll(R.srhs(), s)
+                {
+                    label si = R.srhs()[s];
+                    stCoeffs[si] += sr*R.srhsSto()[s]/solidProducts;
+                }
+                forAll(R.grhs(), g)
+                {   
+                    label gi = gasDictionary_[R.grhs()[g]];
+                    stCoeffs[gi + nSolids_] +=  (1.0 - sr)*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g];
+                }
+                forAll(R.glhs(), g)
+                {
+                    label gi = R.glhs()[g];
+                    stCoeffs[gi + nSolids_] -=  (1.0 - sr)*massCoefficient*gasThermo_[gi].W()*R.glhsSto()[g];
+                }
+            }
+            else if (solidSubstrates < solidProducts)
+            {
+                if (solidSubstrates > 0) 
+                {
+                    scalar sr = solidProducts/solidSubstrates;
+                    scalar massCoefficient = 1./(products-substrates); 
+                    forAll(R.slhs(), s)
+                    {
+                        label si = R.slhs()[s];
+                        stCoeffs[si] -= R.slhsSto()[s]/solidSubstrates;
+                    }
+                    forAll(R.srhs(), s)
+                    {
+                        label si = R.srhs()[s];
+                        stCoeffs[si] += R.srhsSto()[s]/solidSubstrates;
+                    }
+                    forAll(R.grhs(), g)
+                    {
+                        label gi = gasDictionary_[R.grhs()[g]];
+                        stCoeffs[gi + nSolids_] +=  (1.0 - sr)*massCoefficient*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g];
+                    }
+                    forAll(R.glhs(), g)
+                    {
+                        label gi = R.glhs()[g];
+                        stCoeffs[gi + nSolids_] -=  (1.0 - sr)*massCoefficient*gasThermo_[gi].W()*R.glhsSto()[g];
+                    }
+                }
+                else
+                {
+                    scalar sr = products/substrates;
+                    forAll(R.grhs(), g)
+                    {
+                        label gi = gasDictionary_[R.grhs()[g]];
+                        stCoeffs[gi + nSolids_] +=  sr*gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g]/products;
+                    }
+                    forAll(R.glhs(), g)
+                    {
+                        label gi = R.glhs()[g];
+                        stCoeffs[gi + nSolids_] -=  gasThermo_[gi].W()*R.glhsSto()[g]/substrates;
+                    }
+                    forAll(R.srhs(), s)
+                    {
+                        label si = R.srhs()[s];
+                        stCoeffs[si] += (1-sr)*R.srhsSto()[s]/solidProducts;
+                    }
+                }
+            }
+            else if (products == substrates)
+            {
+                forAll(R.slhs(), s)
+                {
+                    label si = R.slhs()[s];
+                    stCoeffs[si] -= R.slhsSto()[s]/solidSubstrates;
+                }
+                forAll(R.srhs(), s)
+                {
+                    label si = R.srhs()[s];
+                    stCoeffs[si] += R.srhsSto()[s]/solidProducts;
+                }
+                if (products > 0)
+                { 
+                    forAll(R.grhs(), g)
+                    {
+                        label gi = gasDictionary_[R.grhs()[g]];
+                        stCoeffs[gi + nSolids_] +=  gasThermo_[gasDictionary_[R.grhs()[g]]].W()*R.grhsSto()[g]/products;
+                    }
+                    forAll(R.glhs(), g)
+                    {
+                        label gi = R.glhs()[g];
+                        stCoeffs[gi + nSolids_] -=  gasThermo_[gi].W()*R.glhsSto()[g]/substrates;
+                    }
+                }     
+            }
+        }    
+        else
+        {
+            forAll(R.glhs(), g)
+            {
+                substrates += R.glhsSto()[g];
+                stCoeffs[R.glhs()[g]+nSolids_] = -R.glhsSto()[g];
+            }
+            forAll(R.grhs(), g)
+            {
+                label gi = gasDictionary_[R.grhs()[g]];
+                products += R.grhsSto()[g];
+                stCoeffs[gi+nSolids_] = R.grhsSto()[g];
+            }
+            forAll(R.slhs(), s)
+            {
+                solidSubstrates += R.slhsSto()[s];
+                stCoeffs[R.slhs()[s]] = -R.slhsSto()[s];
+            }
+            forAll(R.srhs(), s)
+            {
+                solidProducts += R.srhsSto()[s];
+                stCoeffs[R.srhs()[s]] = R.srhsSto()[s];
+            }
+            stCoeffs = stCoeffs/substrates;
+        }
+
         for (label rSj=0; rSj < Ns + Ng; rSj++)
         {
             label sj;
@@ -831,6 +996,7 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
             {
                 sj = R.glhs()[rSj-Ns] +  nSolids_;
             }
+
             scalar kf = kf0;
 
             for (label rSi=0; rSi < Ns + Ng; rSi++)
@@ -881,18 +1047,18 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
                 {
                     si = R.glhs()[rSi-Ns] +  nSolids_;
                 }
-                dfdc[si][sj] -= kf;
+                dfdc[si][sj] += kf*stCoeffs[si];
             }
 
             forAll(R.srhs(), i)
             {
                 label si = R.srhs()[i];
-                dfdc[si][sj] += kf;
+                dfdc[si][sj] += kf*stCoeffs[si];
             }
-            forAll(R.grhs(), i)
+            forAll(R.grhs(), g)
             {
-                label gi = R.grhs()[i];
-                dfdc[gi+nSolids_][sj] += kf;
+                label gi = gasDictionary_[R.grhs()[g]];
+                dfdc[gi+nSolids_][sj] += kf*stCoeffs[gi+nSolids_];
             }
         }
     }
@@ -914,7 +1080,6 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
         }
     }
 
-
     scalarField dcdT1(dcdt);
     omegaPreq = omega(c2,T + delta,0,rR)*(1.-porosityF_[cellI]);
     if (solidReactionEnergyFromEnthalpy_)
@@ -933,7 +1098,7 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
     {
         dfdc[i][nSpecie_] = 0.5*(dcdT1[i] - dcdT0[i])/delta;
     }
-
+    
 }
 
 
