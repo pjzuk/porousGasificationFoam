@@ -684,7 +684,7 @@ Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::ome
         scalar avKf = 1./kf;
         forAll(R.glhs(),i)
         {
-            scalar addAvKf = (ST_[cellI]*gasThermo_[R.glhs()[i]].alpha(T)*pow(gasPhaseGases_[R.glhs()[i]].internalField()[cellI],R.nReact()[Nl+i]));
+            scalar addAvKf = (ST_[cellI]*gasThermo_[R.glhs()[i]].alpha(T)*gasPhaseGases_[R.glhs()[i]].internalField()[cellI]);
             if (addAvKf != 0)
             {
                 avKf += 1./addAvKf;
@@ -1083,13 +1083,12 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
                 scalar chosenKf0 = 0;
                 for (label rSi=Ns; rSi < Ns + Ng; rSi++)
                 {
-                    scalar el = R.nReact()[rSi];
-                    scalar addAvKf = (ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*pow(gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI],el));
+                    scalar addAvKf = (ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI]);
                     if (addAvKf != 0)
                     {
                         avKf += 1./addAvKf;
-                        chosenKf = (el*ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*pow(gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI], el - 1.0));
-                        chosenKf0 = (ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*pow(gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI], el));
+                        chosenKf = ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T);
+                        chosenKf0 = (ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI]);
                     }
                     else
                     {
