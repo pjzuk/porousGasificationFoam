@@ -49,13 +49,19 @@
 
     forAll(Y, i)
     {
-	    Info << " gas  "<<Y[i].name()<< " Srho min/max   = " << gMin(pyrolysisZone.Srho(i)()) << ", " ;
-        Info << gMax(pyrolysisZone.Srho(i)()) << " RR min/max   = " << min(chemistry.RR(i)).value() << ", " ;
-        Info << max(chemistry.RR(i)).value() << " min Y = " << gMin(Y[i]) <<" max Y = " << gMax(Y[i]);
-
-        Y[i] = Y[i]/Yt;
-
-        Info<< " min Ynorm = " << gMin(Y[i]) <<" max Ynorm = " << gMax(Y[i]) << endl;			
+        if (Y[i].name() != inertSpecie)
+        {
+	        Info << " gas  "<<Y[i].name()<< " Srho min/max   = " << gMin(pyrolysisZone.Srho(i)()) << ", " ;
+            Info << gMax(pyrolysisZone.Srho(i)()) << " RR min/max   = " << min(chemistry.RR(i)).value() << ", " ;
+            Info << max(chemistry.RR(i)).value() << " min Y = " << gMin(Y[i]) <<" max Y = " << gMax(Y[i]);
+            Y[i] = Y[i]/Yt;
+            Info<< " min Ynorm = " << gMin(Y[i]) <<" max Ynorm = " << gMax(Y[i]) << endl;		
+        }
+        else
+        {
+        	Info << " gas  "<<Y[i].name()<< " is inert specie, min Y = " << gMin(Y[i]) <<" max Y = " << gMax(Y[i]);
+            Y[i] = Y[i]/Yt;
+            Info<< " min Ynorm = " << gMin(Y[i]) <<" max Ynorm = " << gMax(Y[i]) << endl;			
+        }
     } 
-
 }

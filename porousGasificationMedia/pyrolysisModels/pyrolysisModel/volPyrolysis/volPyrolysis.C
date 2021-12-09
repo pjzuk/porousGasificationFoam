@@ -111,10 +111,9 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho() const
     if (active_)
     {
         const speciesTable& gasTable = solidChemistry_->gasTable();
-    
         forAll(gasTable,gasI)
         {
-    	tSrho = tSrho + Srho(gasI);
+    	    tSrho = tSrho + Srho(gasI);
         }
     }
 
@@ -127,14 +126,10 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho(const label i) const
 
     if (active_)
     {
-        const speciesTable& gasTable = solidChemistry_->gasTable();
-        label j=-1;
-        j = i; 
-   
-        if (j>-1)
+        if (i>-1)
         {
                 
-            tmp<volScalarField> tRRiGas = solidChemistry_->RRg(j);
+            tmp<volScalarField> tRRiGas = solidChemistry_->RRg(i);
             return tRRiGas; 
         }
         else
