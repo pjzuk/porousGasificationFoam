@@ -1,26 +1,30 @@
 // eqZx2uHGn043
 
+
+    // Solve the Momentum equation
+    
     fvVectorMatrix UEqn
     (
-	    fvm::ddt(rho, U)
+        fvm::ddt(rho, U)
       + fvm::div(phi, U)
       + turbulence->divDevRhoReff()
-	==
-	    rho*g
     );
-
-    pZone.addResistance(UEqn,Df);  // eqZx2uHGn015
-
+    
     UEqn.relax();
 
+    pZone.addResistance(UEqn,Df);  // eqZx2uHGn015
+    
+    volScalarField rUA = 1.0/UEqn.A();
+    
     if (pimple.momentumPredictor())
     {
-        solve(UEqn == -fvc::grad(p));
-	    K = 0.5*magSqr(U);
+        solve
+        (
+            UEqn == -fvc::grad(p)
+        );
     }
     else
     {
-        volScalarField rAU(1.0/UEqn.A());
-        U = rAU*(UEqn.H() - fvc::grad(p));
+        U = rUA*(UEqn.H() - fvc::grad(p));
         U.correctBoundaryConditions();
     }
