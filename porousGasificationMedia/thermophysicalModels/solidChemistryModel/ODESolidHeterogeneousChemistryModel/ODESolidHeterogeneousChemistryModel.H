@@ -70,10 +70,10 @@ class ODESolidHeterogeneousChemistryModel
 
 protected:
 
- 	//- List of gas species present in gas phase of reaction system
-	PtrList<volScalarField>& gasPhaseGases_;	
+ 	    //- List of gas species present in gas phase of reaction system
+	    PtrList<volScalarField>& gasPhaseGases_;	
 
-       //- Reference to solid mass fractions
+        //- Reference to solid mass fractions
         PtrList<volScalarField>& Ys_;
 
         //- List of gas species present in reaction system
@@ -109,8 +109,8 @@ protected:
         //- List of reaction rate per gas [kg/m3/s]
         PtrList<scalarField> RRg_;
 
-	//- Sh based on reaction heat
-	volScalarField shReactionHeat_;
+        //- Sh based on reaction heat
+        volScalarField shReactionHeat_;
 
         //- ODE coefficients
         scalarField coeffs_;
@@ -135,37 +135,44 @@ private:
         //- List of active reacting cells
         List<bool> reactingCells_;
 
-	//- cellVolume
-	volScalarField V_;
+	    //- cellVolume
+	    volScalarField V_;
 
-	//- choose source of information about solid chemistry reaction energy
-	Switch solidReactionEnergyFromEnthalpy_;
+	    //- cellVolume
+	    volScalarField tmpF_;
 
-	//- choose source of information about solid chemistry reaction energy
-	Switch stoichiometricReactions_;
+	    //- choose source of information about solid chemistry reaction energy
+	    Switch solidReactionEnergyFromEnthalpy_;
 
-	//- choose source of information about solid chemistry reaction energy
-	Switch diffusionLimitedReactions_;
+	    //- choose way to compute stoichiometric reactions 
+	    Switch stoichiometricReactions_;
 
-	//- change of energy in time while heat of reaction approach is chosen
+	    //- choose to include diffusion limmited reactions
+	    Switch diffusionLimitedReactions_;
+
+	    //- choose to include diffusivities in difusion limitted reactions
+        //- this is necessary because const model should not depend on alpha of specie
+	    Switch diffusionLimitedReactionsAlpha_;
+
+	    //- change of energy in time while heat of reaction approach is chosen
         scalar solidReactionDeltaEnergy_;
  
-	//- show the relative reaction ratios
+	    //- show the relative reaction ratios
         Switch showRRR_;
-       // Private members
+        // Private members
 
-            //- Set reacting status of cell, cellI
-            void setCellReacting(const label cellI, const bool active);
+        //- Set reacting status of cell, cellI
+        void setCellReacting(const label cellI, const bool active);
 
         //- dictionary for gasName communication
         List<label> gasDictionary_;
 
         const volScalarField& rhoG_;
 
-    //- referecnces to porosity fields
-	const volScalarField& porosityF_;
+        //- referecnces to porosity fields
+	    const volScalarField& porosityF_;
 
-    const volScalarField& ST_;
+        const volScalarField& ST_;
 
 public:
 
@@ -216,6 +223,7 @@ public:
         //- dc/dt = omega, rate of change in concentration, for each species
         virtual scalarField omega
         (
+            scalar& tmp2,
             const scalarField& c,
             const scalar T,
             const scalar p,
@@ -236,7 +244,8 @@ public:
             label& lRef,
             scalar& pr,
             scalar& cr,
-            label& rRef
+            label& rRef,
+            scalar& tmp
         ) const;
 
         // Chemistry model functions
