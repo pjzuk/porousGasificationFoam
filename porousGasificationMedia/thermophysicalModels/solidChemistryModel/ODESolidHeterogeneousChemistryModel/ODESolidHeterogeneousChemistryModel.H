@@ -223,7 +223,6 @@ public:
         //- dc/dt = omega, rate of change in concentration, for each species
         virtual scalarField omega
         (
-            scalar& tmp2,
             const scalarField& c,
             const scalar T,
             const scalar p,
@@ -245,7 +244,6 @@ public:
             scalar& pr,
             scalar& cr,
             label& rRef,
-            scalar& tmp
         ) const;
 
         // Chemistry model functions
