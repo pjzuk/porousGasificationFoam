@@ -113,7 +113,7 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho() const
         const speciesTable& gasTable = solidChemistry_->gasTable();
         forAll(gasTable,gasI)
         {
-    	    tSrho = tSrho + Srho(gasI);
+    	    tSrho = tSrho +  solidChemistry_->RRg(gasI);
         }
     }
 
@@ -126,10 +126,19 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho(const label i) const
 
     if (active_)
     {
-        if (i>-1)
+        const speciesTable& gasTable = solidChemistry_->gasTable();
+        label j=-1;
+        forAll(gasTable,gasI)
         {
-                
-            tmp<volScalarField> tRRiGas = solidChemistry_->RRg(i);
+            if (gasTable[gasI] == Ygas_[i].name())
+            {
+                j = gasI;
+            }
+        }
+
+        if (j>-1)
+        {
+            tmp<volScalarField> tRRiGas = solidChemistry_->RRg(j);
             return tRRiGas; 
         }
         else
@@ -144,7 +153,7 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho(const label i) const
                         time_.timeName(),
                         mesh_,
                         IOobject::NO_READ,
-                        IOobject::AUTO_WRITE,
+                        IOobject::NO_WRITE,
                         false
                     ),
                     mesh_,
@@ -166,7 +175,7 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho(const label i) const
                     time_.timeName(),
                     mesh_,
                     IOobject::NO_READ,
-                    IOobject::AUTO_WRITE,
+                    IOobject::NO_WRITE,
                     false
                 ),
                 mesh_,
@@ -337,7 +346,6 @@ void volPyrolysis::solveSpeciesMass()
 
         for (label i=0; i<Ys_.size(); i++)
         {
-    
             volScalarField& Yi = Ys_[i];
             Yi.internalField() *= whereIs_;
             volScalarField sRhoSi = solidChemistry_->RRs(i);

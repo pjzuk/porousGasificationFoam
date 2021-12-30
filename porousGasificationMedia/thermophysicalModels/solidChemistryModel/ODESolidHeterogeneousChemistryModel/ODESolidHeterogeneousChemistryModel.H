@@ -138,9 +138,6 @@ private:
 	    //- cellVolume
 	    volScalarField V_;
 
-	    //- cellVolume
-	    volScalarField tmpF_;
-
 	    //- choose source of information about solid chemistry reaction energy
 	    Switch solidReactionEnergyFromEnthalpy_;
 
@@ -164,8 +161,11 @@ private:
         //- Set reacting status of cell, cellI
         void setCellReacting(const label cellI, const bool active);
 
-        //- dictionary for gasName communication
+        //- dictionary for pyrolysisGases -> gasPhaseGases
         List<label> gasDictionary_;
+
+        //- dictionary for gasPhaseGases -> pyrolysisGases
+        List<label> gasDictionaryBack_;
 
         const volScalarField& rhoG_;
 
@@ -243,7 +243,7 @@ public:
             label& lRef,
             scalar& pr,
             scalar& cr,
-            label& rRef,
+            label& rRef
         ) const;
 
         // Chemistry model functions
