@@ -147,10 +147,6 @@ private:
 	    //- choose to include diffusion limmited reactions
 	    Switch diffusionLimitedReactions_;
 
-	    //- choose to include diffusivities in difusion limitted reactions
-        //- this is necessary because const model should not depend on alpha of specie
-	    Switch diffusionLimitedReactionsAlpha_;
-
 	    //- change of energy in time while heat of reaction approach is chosen
         scalar solidReactionDeltaEnergy_;
  

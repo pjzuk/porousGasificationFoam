@@ -52,7 +52,8 @@ cylinderST::cylinderST
     cylinderRadius_(1.0),
     Up_(db().lookupObject<volVectorField>("U")),
     rhop_(db().lookupObject<volScalarField>("rho")),
-    mup_(db().lookupObject<volScalarField>("mu"))
+    mup_(db().lookupObject<volScalarField>("mu")),
+    alphap_(db().lookupObject<volScalarField>("alpha"))
 {
    read();
 }
@@ -104,7 +105,7 @@ tmp<volScalarField> cylinderST::ST() const
               (1. + 0.55
                 *Foam::pow(2*cylinderRadius_*rhop_[cellI]*mag(Up_[cellI])/mup_[cellI],0.6)
                 /cylinderRadius_
-              );  //eqZx2uHGn019 eqZx2uHGn020 
+              )*alphap_[cellI];  //eqZx2uHGn019 eqZx2uHGn020
     }
 
     return STloc_;

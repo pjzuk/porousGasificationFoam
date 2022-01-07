@@ -125,10 +125,6 @@ ODESolidHeterogeneousChemistryModel
         mesh.lookupObject<dictionary>
             ("chemistryProperties").lookupOrDefault("diffusionLimitedReactions",false)
     ),
-    diffusionLimitedReactionsAlpha_
-    (
-        true
-    ),
     solidReactionDeltaEnergy_(0.0),
     showRRR_
     (
@@ -287,25 +283,6 @@ ODESolidHeterogeneousChemistryModel
 
     Info << "diffusionLimitedReactions " << diffusionLimitedReactions_ << nl;
 
-    if ( diffusionLimitedReactions_ )
-    {
-        word STmodelName
-        (
-            IOdictionary
-            (
-                IOobject
-                (
-                    "specieTransferProperties",
-                    mesh.time().constant(),
-                    mesh,
-                    IOobject::MUST_READ,
-                    IOobject::NO_WRITE,
-                    false
-                )
-            ).lookup("specieTransferModel")
-        );
-        diffusionLimitedReactionsAlpha_ =  !( STmodelName == "constST" );
-    }
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -719,14 +696,7 @@ Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::ome
         forAll(R.glhs(),i)
         {
             scalar addAvKf = 0.;
-            if (diffusionLimitedReactionsAlpha_)
-            {
-                addAvKf = (ST_[cellI]*gasThermo_[R.glhs()[i]].alpha(T)*gasPhaseGases_[R.glhs()[i]].internalField()[cellI]*rhoG_[cellI]);
-            }
-            else
-            {
-                addAvKf = (ST_[cellI]*gasPhaseGases_[R.glhs()[i]].internalField()[cellI]*rhoG_[cellI]);
-            }
+            addAvKf = (ST_[cellI]*gasPhaseGases_[R.glhs()[i]].internalField()[cellI]*rhoG_[cellI]);
             if (addAvKf != 0)
             {
                 avKf += 1./addAvKf;
@@ -1111,27 +1081,12 @@ void Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>
                 scalar addAvKf = 0.;
                 for (label rSi=Ns; rSi < Ns + Ng; rSi++)
                 {
-                    if (diffusionLimitedReactionsAlpha_)
-                    {
-                        addAvKf = (ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI]*rhoG_[cellI]);
-                    }
-                    else
-                    {
-                        addAvKf = (ST_[cellI]*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI])*rhoG_[cellI];
-                    }
+                    addAvKf = (ST_[cellI]*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI])*rhoG_[cellI];
                     if (addAvKf != 0)
                     {
                         avKf += 1./addAvKf;
-                        if (diffusionLimitedReactionsAlpha_)
-                        {
-                            chosenKf = ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*rhoG_[cellI];
-                            chosenKf0 = (ST_[cellI]*gasThermo_[R.glhs()[rSi-Ns]].alpha(T)*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI]*rhoG_[cellI]);
-                        }
-                        else
-                        {
-                            chosenKf = ST_[cellI]*rhoG_[cellI];
-                            chosenKf0 = (ST_[cellI]*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI]*rhoG_[cellI]);
-                        }
+                        chosenKf = ST_[cellI]*rhoG_[cellI];
+                        chosenKf0 = (ST_[cellI]*gasPhaseGases_[R.glhs()[rSi-Ns]].internalField()[cellI]*rhoG_[cellI]);
                     }
                     else
                     {
