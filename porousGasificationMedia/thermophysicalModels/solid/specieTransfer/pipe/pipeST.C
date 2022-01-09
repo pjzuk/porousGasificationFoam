@@ -102,7 +102,7 @@ tmp<volScalarField> pipeST::ST() const
     forAll (STloc_(),cellI)
     {
 	    STloc_()[cellI] = pow(por()[cellI],0.5)*pow(por0()[cellI],0.5)*2.0/pipeRadius_*
-              (3.66)
+              (1.83)
                 /pipeRadius_*alphap_[cellI];  //eqZx2uHGn019 eqZx2uHGn020 
     }
 
