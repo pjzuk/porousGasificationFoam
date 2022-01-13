@@ -319,7 +319,6 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::heatUpGasCalc() const
         {    
             volScalarField tempSh = hSh_();
             tempSh = gasChemistry_.thermo().Cp() * (T_ - gasChemistry_.thermo().T()) * Srho();
-            forAll(tempSh,cellI)
             hSh_() = tempSh*whereIs_*(1-porosity_);
         }
     }
