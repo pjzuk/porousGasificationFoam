@@ -61,7 +61,7 @@ To install the 'porousGasificationMedia':
 4. 	Set the package environment by typing:
 	source porousGasificationMediaDirectories
 5.	Run the install script:
-	./install
+	./Allwmake
 6.      Test the installation by running the solver:
 	porousGasificationFoam
 
@@ -81,7 +81,7 @@ In case of errors:
 5. 	Test the ld version: ld -v
 	The 'GNU ld' is required. If the 'GNU gold' is installed remove it typing:
 	sudo apt-get remove --purge binutils-gold
-6. 	Run install script: ./install > log_install &
+6. 	Run install script: ./Allwmake > log_install &
 7.	Other possibility: 
 	clean up the library settings: unset LD_LIBRARY_PATH
 	and repeat steps 1-3 and 6.
@@ -136,8 +136,11 @@ this file, readme file
 ./porousGasificationMediaDirectories
 file adding paths to installation folder and libraries
 
-./install
+./Allwmake
 installation script
+
+./Allwclean
+library removal script
 
 #########################
 #  setPorosity utility
