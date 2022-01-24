@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
         pyrolysisZone.evolve();
 
         #include "chemistry.H"
+        #include "rhoEqn.H"
 
         // --- PIMPLE loop
         while (pimple.loop())
@@ -98,20 +99,22 @@ int main(int argc, char *argv[])
                 U.storePrevIter();
             }
 
+            #include "UEqn.H"
             #include "YEqn.H"
             #include "hsEqn.H"
-            #include "rhoEqn.H"
-            #include "UEqn.H"
 
             // --- PISO loop
 	        while (pimple.correct())            
             {
                 #include "pEqn.H"
             }
-            turbulence->correct();
-
-            rho = thermo.rho();
         }
+
+        turbulence->correct();
+        rho = thermo.rho();
+
+        Info<< "rho max/min : " << max(rho).value()
+            << " " << min(rho).value() << endl;
 
         if (runTime.write())
         {
