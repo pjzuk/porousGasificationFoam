@@ -110,17 +110,11 @@ class porousReactingZone
         //  Currently unused.
         scalar porosity_;
 
-        //- powerLaw coefficient C0
-        scalar C0_;
-
-        //- powerLaw coefficient C1
-        scalar C1_;
-
         //- Darcy coefficient
         dimensionedTensor D_;
 
         //- Forchheimer coefficient
-        dimensionedTensor F_;
+        scalar f_;
 
         //- porosity field
         volScalarField& porosityF_;
@@ -129,33 +123,6 @@ class porousReactingZone
 
         //- adjust negative resistance values to be multiplier of max value
         static void adjustNegativeResistance(dimensionedVector& resist);
-	
-	//const labelList findPorousZone(scalarField& porosityF);
-
-
-        //- Power-law resistance
-        template<class RhoFieldType>
-        void addPowerLawResistance
-        (
-            scalarField& Udiag,
-            const labelList& cells,
-            const scalarField& V,
-            const RhoFieldType& rho,
-            const vectorField& U
-        ) const;
-
-        //- Viscous and inertial resistance
-        template<class RhoFieldType>
-        void addViscousInertialResistance
-        (
-            scalarField& Udiag,
-            vectorField& Usource,
-            const labelList& cells,
-            const scalarField& V,
-            const RhoFieldType& rho,
-            const scalarField& mu,
-            const vectorField& U
-        ) const;
 
 	//- Df based viscous and intertial resistance
 	template<class RhoFieldType>
@@ -170,27 +137,6 @@ class porousReactingZone
 	    const vectorField& U,
 	    tensorField& Df 
 	) const;
-
-        //- Power-law resistance
-        template<class RhoFieldType>
-        void addPowerLawResistance
-        (
-            tensorField& AU,
-            const labelList& cells,
-            const RhoFieldType& rho,
-            const vectorField& U
-        ) const;
-
-        //- Viscous and inertial resistance
-        template<class RhoFieldType>
-        void addViscousInertialResistance
-        (
-            tensorField& AU,
-            const labelList& cells,
-            const RhoFieldType& rho,
-            const scalarField& mu,
-            const vectorField& U
-        ) const;
 
 
         //- Disallow default bitwise copy construct
@@ -294,7 +240,7 @@ public:
 
         //- Add the viscous and inertial resistance force contribution
         //  to the momentum equation
-	void addResistance(fvVectorMatrix& UEqn, volTensorField& Df) const;
+        void addResistance(fvVectorMatrix& UEqn, volTensorField& Df) const;
 		
         //- Add the viscous and inertial resistance force contribution
         //  to the tensorial diagonal.
@@ -314,7 +260,7 @@ public:
 
         friend Ostream& operator<<(Ostream&, const porousReactingZone&);
 
-	//- mirror fvm::ddt with porosity
+	    //- mirror fvm::ddt with porosity
         template<class Type>
         tmp<fvMatrix<Type> > ddt
         (

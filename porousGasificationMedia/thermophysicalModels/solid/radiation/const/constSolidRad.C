@@ -40,9 +40,6 @@ constSolidRad<thermo>::constSolidRad(const dictionary& dict)
     kappa_(dict.lookupOrDefault("kappa",0.)),
     sigmaS_(dict.lookupOrDefault("sigmaS",0.)),
     emissivity_(dict.lookupOrDefault("emissivity",0.))
-//    kappa_(readScalar(dict.subDict("radiation").lookup("kappa"))),
-//    sigmaS_(readScalar(dict.subDict("radiation").lookup("sigmaS"))),
-//    emissivity_(readScalar(dict.subDict("radiation").lookup("emissivity")))
 {}
 
 

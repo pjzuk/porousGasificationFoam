@@ -34,36 +34,8 @@ License
 
 // * * * * * * * * * * * * Static Member Functions * * * * * * * * * * * * * //
 
-// adjust negative resistance values to be multiplier of max value
-void Foam::porousReactingZone::adjustNegativeResistance(dimensionedVector& resist)
-{
-    scalar maxCmpt = max(0, cmptMax(resist.value()));
-
-    if (maxCmpt < 0)
-    {
-        FatalErrorIn
-        (
-            "Foam::porousReactingZone::porousReactingZone::adjustNegativeResistance"
-            "(dimensionedVector&)"
-        )   << "negative resistances! " << resist
-            << exit(FatalError);
-    }
-    else
-    {
-        vector& val = resist.value();
-        for (label cmpt=0; cmpt < vector::nComponents; ++cmpt)
-        {
-            if (val[cmpt] < 0)
-            {
-                val[cmpt] *= -maxCmpt;
-            }
-        }
-    }
-}
-
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
 
 
 Foam::porousReactingZone::porousReactingZone
@@ -78,12 +50,47 @@ Foam::porousReactingZone::porousReactingZone
     cellZoneID_(),
     coordSys_(),
     porosity_(0.),
-    C0_(0.),
-    C1_(0.),
     D_("D", dimensionSet(0, -2, 0, 0, 0), tensor::zero),
-    F_("F", dimensionSet(0, -1, 0, 0, 0), tensor::zero),
+    f_(0.),
     porosityF_(porosityF)
 {
+
+    IOobject porosityPropertiesHeader
+    (
+        "porosityProperties",
+        mesh_.time().constant(),
+        mesh_,
+        IOobject::MUST_READ
+    );
+
+    word modelType;
+    if (porosityPropertiesHeader.headerOk())
+    {
+        IOdictionary dict
+        (
+            IOobject
+            (
+                "porosityProperties",
+                mesh_.time().constant(),
+                mesh_,
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE,
+                false
+            )
+        );
+        f_ = dict.lookupOrDefault("forchheimerCoeff",0.);
+        Info << "Forchheimer coefficient f = " << f_  << " specified" << nl 
+             << "Darcy resistance term will be modified by + f*rho*mag(u)*sqrt(3.)*Df/|Df|" 
+             << nl << endl;
+
+    }
+    else
+    {
+        Info << "no Forchheimer coefficient specified" << nl 
+             << "Darcy resistance term only. For the Forchheimer term create porosityProperties dictionary." 
+             << nl << endl;
+    }
+
 }
 
 //*****************************************************************************************
@@ -131,91 +138,6 @@ const
 }
 
 
-
-void Foam::porousReactingZone::addResistance
-(
-    const fvVectorMatrix& UEqn,
-    volTensorField& AU,
-    bool correctAUprocBC
-) const
-{
-    if (cellZoneID_ == -1)
-    {
-        return;
-    }
-
-    bool compressible = false;
-    if (UEqn.dimensions() == dimensionSet(1, 1, -2, 0, 0))
-    {
-        compressible = true;
-    }
-
-    const labelList& cells = mesh_.cellZones()[cellZoneID_];
-    const vectorField& U = UEqn.psi();
-
-    if (C0_ > VSMALL)
-    {
-        if (compressible)
-        {
-            addPowerLawResistance
-            (
-                AU,
-                cells,
-                mesh_.lookupObject<volScalarField>("rho"),
-                U
-            );
-        }
-        else
-        {
-            addPowerLawResistance
-            (
-                AU,
-                cells,
-                geometricOneField(),
-                U
-            );
-        }
-    }
-
-    const tensor& D = D_.value();
-    const tensor& F = F_.value();
-
-    if (magSqr(D) > VSMALL || magSqr(F) > VSMALL)
-    {
-        if (compressible)
-        {
-            addViscousInertialResistance
-            (
-                AU,
-                cells,
-                mesh_.lookupObject<volScalarField>("rho"),
-                mesh_.lookupObject<volScalarField>("mu"),
-                U
-            );
-        }
-        else
-        {
-            addViscousInertialResistance
-            (
-                AU,
-                cells,
-                geometricOneField(),
-                mesh_.lookupObject<volScalarField>("nu"),
-                U
-            );
-        }
-    }
-
-    if (correctAUprocBC)
-    {
-        // Correct the boundary conditions of the tensorial diagonal to ensure
-        // processor boundaries are correctly handled when AU^-1 is interpolated
-        // for the pressure equation.
-        AU.correctBoundaryConditions();
-    }
-}
-
-
 void Foam::porousReactingZone::writeDict(Ostream& os, bool subDict) const
 {
     if (subDict)
@@ -240,13 +162,6 @@ void Foam::porousReactingZone::writeDict(Ostream& os, bool subDict) const
     if (dict_.found("porosity"))
     {
         os.writeKeyword("porosity") << porosity() << token::END_STATEMENT << nl;
-    }
-
-    // powerLaw coefficients
-    if (const dictionary* dictPtr = dict_.subDictPtr("powerLaw"))
-    {
-        os << indent << "powerLaw";
-        dictPtr->write(os);
     }
 
     // Darcy-Forchheimer coefficients

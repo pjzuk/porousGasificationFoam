@@ -42,56 +42,6 @@ const
 	}
 }
 
-
-template<class RhoFieldType>
-void Foam::porousReactingZone::addPowerLawResistance
-(
-    scalarField& Udiag,
-    const labelList& cells,
-    const scalarField& V,
-    const RhoFieldType& rho,
-    const vectorField& U
-) const
-{
-    const scalar C0 = C0_;
-    const scalar C1m1b2 = (C1_ - 1.0)/2.0;
-
-    forAll (cells, i)
-    {
-        Udiag[cells[i]] +=
-            V[cells[i]]*rho[cells[i]]*C0*pow(magSqr(U[cells[i]]), C1m1b2);
-    }
-}
-
-
-template<class RhoFieldType>
-void Foam::porousReactingZone::addViscousInertialResistance
-(
-    scalarField& Udiag,
-    vectorField& Usource,
-    const labelList& cells,
-    const scalarField& V,
-    const RhoFieldType& rho,
-    const scalarField& mu,
-    const vectorField& U
-) const
-{
-
-	const tensor& D = D_.value();
-	const tensor& F = F_.value();
-
-	forAll (cells, i)
-	{
-	    tensor dragCoeff = mu[cells[i]]*D + (rho[cells[i]]*mag(U[cells[i]]))*F;
-	    scalar isoDragCoeff = tr(dragCoeff);
-
-	    Udiag[cells[i]] += V[cells[i]]*isoDragCoeff;
-	    Usource[cells[i]] -=
-	        V[cells[i]]*((dragCoeff - I*isoDragCoeff) & U[cells[i]]);
-	}
-}
-
-
 // ******************************************************************************** //
 // eqZx2uHGn015
 // eqZx2uHGn014
@@ -112,11 +62,20 @@ void Foam::porousReactingZone::addViscousInertialResistance
     forAll (cells, i)
     {
 //      this is Darcy level only
-        tensor dragCoeff = mu[cells[i]]*Df[cells[i]];
+//        tensor dragCoeff = mu[cells[i]]*Df[cells[i]];
 
 //      this is Darcy-Forcheimer level
-//      which can be put into use
-//      tensor dragCoeff = mu[cells[i]]*Df[cells[i]] + (rho[cells[i]]*mag(U[cells[i]]))*Ff[cells[i]];
+        tensor dragCoeff;
+        if (mag(Df[cells[i]]) != 0)
+        {
+            dragCoeff = (
+                            mu[cells[i]] + f_*rho[cells[i]]*mag(U[cells[i]])*sqrt(3.)/mag(Df[cells[i]])
+                        )*Df[cells[i]];
+        }
+        else
+        {
+            dragCoeff = mu[cells[i]]*Df[cells[i]];
+        }
 
 //      isotropic part that goes into diagonal part of U matrix
         scalar isoDragCoeff = tr(dragCoeff);
@@ -130,45 +89,6 @@ void Foam::porousReactingZone::addViscousInertialResistance
 }
 
 // ******************************************************************************** //
-
-template<class RhoFieldType>
-void Foam::porousReactingZone::addPowerLawResistance
-(
-    tensorField& AU,
-    const labelList& cells,
-    const RhoFieldType& rho,
-    const vectorField& U
-) const
-{
-    const scalar C0 = C0_;
-    const scalar C1m1b2 = (C1_ - 1.0)/2.0;
-
-    forAll (cells, i)
-    {
-        AU[cells[i]] = AU[cells[i]]
-          + I*(rho[cells[i]]*C0*pow(magSqr(U[cells[i]]), C1m1b2));
-    }
-}
-
-
-template<class RhoFieldType>
-void Foam::porousReactingZone::addViscousInertialResistance
-(
-    tensorField& AU,
-    const labelList& cells,
-    const RhoFieldType& rho,
-    const scalarField& mu,
-    const vectorField& U
-) const
-{
-    const tensor& D = D_.value();
-    const tensor& F = F_.value();
-
-    forAll (cells, i)
-    {
-        AU[cells[i]] += mu[cells[i]]*D + (rho[cells[i]]*mag(U[cells[i]]))*F;
-    }
-}
 
 template<class Type>
 Foam::tmp<Foam::fvMatrix<Type> >
