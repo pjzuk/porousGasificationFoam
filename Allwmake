@@ -13,7 +13,6 @@ cp -r utilities/totalMassPorousGasificationFoam $WM_PROJECT_USER_DIR/application
 cp -r porousGasificationMedia/porousReactingMedia $FOAM_HGS/
 cp -r porousGasificationMedia/thermophysicalModels $FOAM_HGS/
 cp -r porousGasificationMedia/pyrolysisModels $FOAM_HGS/
-cp install $FOAM_HGS/
 
 cd $FOAM_HGS/porousReactingMedia
 wmake libso
