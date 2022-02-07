@@ -62,7 +62,7 @@ void Foam::porousReactingZone::addViscousInertialResistance
     forAll (cells, i)
     {
 //      this is Darcy level only
-//        tensor dragCoeff = mu[cells[i]]*Df[cells[i]];
+//      tensor dragCoeff = mu[cells[i]]*Df[cells[i]];
 
 //      this is Darcy-Forcheimer level
         tensor dragCoeff;
