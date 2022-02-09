@@ -322,7 +322,6 @@ ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::omega
     forAll(reactions_, i)
     {
         const solidHeterogeneousReaction& R = reactions_[i];
-
         scalar omegai = omega
         (
             R, c, T, 0.0, pf, cf, lRef, pr, cr, rRef
@@ -690,7 +689,7 @@ Foam::ODESolidHeterogeneousChemistryModel<CompType, SolidThermo, GasThermo>::ome
         kf *= rhoG_[cellI];
     }
 
-    if (diffusionLimitedReactions_ and (R.glhs().size() > 0 ) and (kf != 0))
+    if (diffusionLimitedReactions_ and (R.glhs().size() > 0 ) and (kf > VSMALL))
     {
         scalar avKf = 1./kf;
         forAll(R.glhs(),i)
