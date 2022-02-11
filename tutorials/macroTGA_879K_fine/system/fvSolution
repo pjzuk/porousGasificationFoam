@@ -27,35 +27,22 @@ solvers
         solver           PCG;
         preconditioner   DIC;
         tolerance        1e-6;
-        relTol           1e-2;
+        relTol           0;
     }
-
-    pFinal
-    {
-        $p;
-        relTol           0.0;
-    }
-
 
     "(U|hs|Yi|Ys|porosity)"
     {
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-06;
-        relTol          0.01;
+        relTol          0;
     }
-
-    "(U|hs|Yi|Ys|porosity)Final"
-    {
-        $U;
-        relTol      0;
-    }   
 
     Ts
     {
         solver           PCG;
         preconditioner   DIC;
-        tolerance        1e-6;
+        tolerance        1e-10;
         relTol           0;
     }
 
@@ -71,14 +58,9 @@ solvers
     {
         $p;
         tolerance       1e-05;
-        relTol          1e-2;
-    }
-
-    GFinal
-    {
-        $G;
         relTol          0;
     }
+
 }
 
 

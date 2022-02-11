@@ -1,0 +1,67 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.1;
+    format      binary;
+    class       dictionary;
+    location    "constant";
+    object      chemistryProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+chemistry           on;
+
+psiChemistryModel   ODEChemistryModel<gasThermoPhysics>;
+
+solidChemistryModel  ODESolidHeterogeneousChemistryModel<constSolidThermoPhysics,gasThermoPhysics>;
+
+gasThermoModel      gasThermoPhysics;
+
+chemistrySolver     ode;
+
+solidChemistrySolver	solidOde;
+
+initialChemicalTimeStep 1e-5;
+
+turbulentReaction   off;
+solidReactionEnergyFromEnthalpy false;
+stoichiometricReactions false;
+showRelativeReactionRates false;
+
+diffusionLimitedReactions true;
+
+odeCoeffs
+{
+    ODESolver       KRR4;
+    eps             1e-1;
+    scale           1;
+}
+
+solidOdeCoeffs
+{
+    ODESolver	KRR4;	
+    eps			1e-1;
+    scale		1;
+}
+
+species 	//gasous products of reactions
+(
+    CO N2 O2 
+);
+
+solidReactions
+(
+    irreversibleSolidArrheniusHeterogeneousReaction
+    wood + 1.25 O2 = 0.5 ash + 1.75 CO 
+    (5.61e9 1.96e4 300 -6.22e6  1. 1.0)
+);
+
+// ************************************************************************* //
+
+

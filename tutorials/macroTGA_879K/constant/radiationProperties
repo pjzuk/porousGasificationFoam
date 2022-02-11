@@ -20,7 +20,7 @@ radiation       on;  //era on
 heterogeneousRadiationModel  heterogeneousP1;
 
 // Number of flow iterations per radiation iteration
-solverFreq 1;
+solverFreq 10;
 
 heterogeneousAbsorptionEmissionModel heterogeneousConstantAbsorptionEmission;
 

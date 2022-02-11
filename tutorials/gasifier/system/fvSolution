@@ -1,0 +1,90 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    rho 
+    {
+        solver          diagonal;
+    }
+    p
+    {
+        solver          GAMG;
+        tolerance       1e-06;
+        relTol          0;
+        smoother        GaussSeidel;
+        cacheAgglomeration true;
+        nCellsInCoarsestLevel 10;
+        agglomerator    faceAreaPair;
+        mergeLevels     1;
+    }
+    "(U|hs|Yi|Ys|porosity)"
+    {
+        solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       1e-06;
+        relTol          5e-2;
+    }
+    Ts
+    {
+        solver           PCG;
+        preconditioner   DIC;
+        tolerance        1e-10;
+        relTol           0;
+    }
+
+    rhos
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-06;
+        relTol          0;
+    }
+
+    G
+    {
+        $p;
+        tolerance       1e-05;
+        relTol          1e-2;
+    }
+}
+
+
+PIMPLE
+{
+    momentumPredictor yes;
+    nOuterCorrectors  2;
+    nCorrectors     2;
+    nNonOrthogonalCorrectors 0;
+}
+
+
+relaxationFactors
+{
+    equations
+    {
+        U   1;
+        Ufinal 1;
+        hs  1;
+        hsFinal  1;
+        Yi  1;
+        YiFinal 1;
+    }
+}
+
+// *************************************************************************//
+

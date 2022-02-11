@@ -1,0 +1,48 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+defaultFieldValues
+(
+    volScalarFieldValue Ts  300
+    volScalarFieldValue porosityF  1. 
+    volScalarFieldValue porosityF0 1. 
+
+);
+
+regions
+(
+  boxToCell
+  {
+      box (0. -0.1 0.02) (0.05 0.1 0.16);
+      fieldValues
+      (
+          volScalarFieldValue porosityF  0.4
+          volScalarFieldValue porosityF0 0.4
+      );
+  }
+
+  boxToCell
+  {
+      box (0. -0.1 0.155) (0.05 0.1 0.16);
+      fieldValues
+      (
+          volScalarFieldValue Ts 800
+      );
+  }
+);
+
+// ************************************************************************* //

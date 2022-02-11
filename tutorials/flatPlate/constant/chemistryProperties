@@ -1,0 +1,63 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.1;
+    format      binary;
+    class       dictionary;
+    location    "constant";
+    object      chemistryProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+chemistry         off;
+
+psiChemistryModel    ODEChemistryModel<gasThermoPhysics>;
+
+solidChemistryModel  ODESolidHeterogeneousChemistryModel<constSolidThermoPhysics,gasThermoPhysics>;
+
+gasThermoModel    gasThermoPhysics;
+
+chemistrySolver     ode;
+
+solidChemistrySolver	solidOde;
+
+initialChemicalTimeStep 1e-7;
+
+turbulentReaction   off;
+solidReactionEnergyFromEnthalpy false;
+stoichiometricReactions false;
+showRelativeReactionRates false;
+diffusionLimitedReactions true;
+
+odeCoeffs
+{
+    ODESolver       KRR4;
+    eps             0.1;
+    scale           1;
+}
+
+solidOdeCoeffs
+{
+    ODESolver	KRR4;	
+    eps			0.1;
+    scale		1;
+}
+
+species 	//gasous products of reactions
+(
+    O2 N2
+);
+
+solidReactions
+(
+);
+
+// ************************************************************************* //
+
+

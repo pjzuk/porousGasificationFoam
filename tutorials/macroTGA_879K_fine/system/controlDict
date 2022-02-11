@@ -51,7 +51,7 @@ maxCo      0.2;
 
 maxDi      5000;
 
-maxDeltaT	0.01;
+//maxDeltaT	0.01;
 
 functions
 (

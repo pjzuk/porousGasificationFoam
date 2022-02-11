@@ -1,0 +1,59 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.1;
+    format      ascii;
+    class       dictionary;
+    object      solidThermophysicalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+thermoType solidMixtureThermo<constHeterogeneous>;
+
+solidComponents
+(
+  ash wood
+);
+
+woodCoeffs
+{
+    transport
+    {
+        K           0.15;
+    }
+    thermodynamics
+    {
+        Cp          2810;
+        Hf          -2.12e4;
+    }
+    density
+    {
+      rho           663;
+    }
+};
+
+ashCoeffs
+{
+    transport
+    {
+        K           0.15;
+    }
+    thermodynamics
+    {
+        Cp          2400;
+        Hf          -12.38e6;
+    }
+    density
+    {
+      rho           650;
+    }
+};
+
+
+// ************************************************************************* //

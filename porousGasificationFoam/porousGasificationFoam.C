@@ -82,9 +82,7 @@ int main(int argc, char *argv[])
         Info<< "deltaT = " <<  runTime.deltaT().value() << nl << endl;
 
         #include "radiation.H"
-
         pyrolysisZone.evolve();
-
         #include "chemistry.H"
         #include "rhoEqn.H"
 
@@ -128,7 +126,6 @@ int main(int argc, char *argv[])
             << nl << endl;
 
         runTime++;
-
 
     }
 
