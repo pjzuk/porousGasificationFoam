@@ -115,19 +115,19 @@ Foam::label Foam::solidHeterogeneousReaction::componentIndex
 
         if (i != word::npos)
         {
-            string exponentStr = componentName
+            string exponentStr = componentName.substr
             (
                 i + 1,
                 componentName.size() - i - 1
             );
-            componentName = componentName(0, i);
+            componentName = componentName.substr(0, i);
         }
-        if (components_.contains(componentName))
+        if (components_.found(componentName))
         {
             isGas = false;
             return (components_[componentName]);
         }
-        else if (pyrolisisGases_.contains(componentName))
+        else if (pyrolisisGases_.found(componentName))
         {
             isGas = true;
             return (pyrolisisGases_[componentName]);
@@ -180,97 +180,97 @@ void Foam::solidHeterogeneousReaction::setLRhs(Istream& is)
 
     while (is && proceed)
     {
-	token t(is);
+        token t(is);
 
-	if (t.isPunctuation())
-	{
+        if (t.isPunctuation())
+        {
             if (t == token::BEGIN_LIST)
             {
                 proceed = false;
-		is.putBack(t);
+                is.putBack(t);
             }
-	    if (t == token::ASSIGN)
-	    {
-		LHS = false;
-	    }
-	}
-	else if (t.isNumber())
-	{
-	    number = true;
-	    stoich = t.number();
-	}
-	else
-	{
-	    index = componentIndex(isGas,t);
-	    isComponent = true;
-	}
+            if (t == token::ASSIGN)
+            {
+                LHS = false;
+            }
+        }
+        else if (t.isNumber())
+        {
+            number = true;
+            stoich = t.number();
+        }
+        else
+        {
+            index = componentIndex(isGas,t);
+            isComponent = true;
+        }
 
-	if (isComponent)
-	{
-	    if (LHS)
-	    {
-		if(isGas)
-		{
+        if (isComponent)
+        {
+            if (LHS)
+            {
+                if (isGas)
+                {
                     forAll(gasPhaseGases_,i)
-                            {
-                                if (pyrolisisGases_[index] == gasPhaseGases_[i].name())
-                                {
-                                        dglhs.append(i);
-                                }
-                            }
-		    if (number)
-		    {
-			dglhsSto.append(stoich);
-		    }
-		    else
-		    {
-			dglhsSto.append(1.0);
-		    }
-		}
-		else
-		{
-		    if(number)
-		    {
-			dslhsSto.append(stoich);
-		    }
-		    else
-		    {
-			dslhsSto.append(1.0);
-		    }
-		    dslhs.append(index);
-		}
-	    }
-	    else
-	    {
-		if(isGas)
-		{
-		    dgrhs.append(index);
-		    if (number)
-		    {
-			dgrhsSto.append(stoich);
-		    }
-		    else
-		    {
-			dgrhsSto.append(1.0);
-		    }
-		}
-		else
-		{
-		    if(number)
-		    {
-			dsrhsSto.append(stoich);
-		    }
-		    else
-		    {
-			dsrhsSto.append(1.0);
-		    }
-		    dsrhs.append(index);
-		}
-	    }
+                    {
+                        if (pyrolisisGases_[index] == gasPhaseGases_[i].name())
+                        {
+                            dglhs.append(i);
+                        }
+                    }
+                    if (number)
+                    {
+                        dglhsSto.append(stoich);
+                    }
+                    else
+                    {
+                        dglhsSto.append(1.0);
+                    }
+                }
+                else
+                {
+                    if(number)
+                    {
+                        dslhsSto.append(stoich);
+                    }
+                    else
+                    {
+                        dslhsSto.append(1.0);
+                    }
+                    dslhs.append(index);
+                }
+            }
+            else
+            {
+                if(isGas)
+                {
+                    dgrhs.append(index);
+                    if (number)
+                    {
+                        dgrhsSto.append(stoich);
+                    }
+                    else
+                    {
+                        dgrhsSto.append(1.0);
+                    }
+                }
+                else
+                {
+                    if(number)
+                    {
+                        dsrhsSto.append(stoich);
+                    }
+                    else
+                    {
+                        dsrhsSto.append(1.0);
+                    }
+                    dsrhs.append(index);
+                }
+            }
             number = false;
-    	    isGas = false;
-    	    isComponent = false;
-	}
+            isGas = false;
+            isComponent = false;
+        }
     }
 
     slhs_ = dslhs.shrink();
@@ -281,19 +281,6 @@ void Foam::solidHeterogeneousReaction::setLRhs(Istream& is)
     srhsSto_ = dsrhsSto.shrink();
     glhsSto_ = dglhsSto.shrink();
     grhsSto_ = dgrhsSto.shrink();
-
-/*
-        {
-            FatalIOErrorIn("solidHeterogeneousReaction::lsrhs(Istream& is)", is)
-                << "Cannot find component in tables"
-                << exit(FatalIOError);
-        }
-    }
-
-    FatalIOErrorIn("solidHeterogeneousReaction::lsrhs(Istream& is)", is)
-        << "Cannot continue reading reaction data from stream"
-        << exit(FatalIOError);
-*/
 }
 
 // * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
@@ -321,7 +308,7 @@ Foam::autoPtr<Foam::solidHeterogeneousReaction> Foam::solidHeterogeneousReaction
 
     const word reactionTypeName(is);
 
-    IstreamConstructorTable::iterator cstrIter
+    auto cstrIter
         = IstreamConstructorTablePtr_->find(reactionTypeName);
 
     if (cstrIter == IstreamConstructorTablePtr_->end())
@@ -351,7 +338,8 @@ void Foam::solidHeterogeneousReaction::write(Ostream& os) const
 {
     os << type() << nl << "    ";
 
-    os << "slhs " << slhs_.size() << " srhs " << srhs_.size() << " glhs " << glhs_.size() << " grhs " << grhs_.size() << nl;
+    os << "slhs " << slhs_.size() << " srhs " << srhs_.size()
+       << " glhs " << glhs_.size() << " grhs " << grhs_.size() << nl;
 
     forAll(slhs_, i)
     {
@@ -360,7 +348,7 @@ void Foam::solidHeterogeneousReaction::write(Ostream& os) const
 
     forAll(glhs_, i)
     {
-	os << " + " << glhsSto_[i]  << " " << gasPhaseGases_[glhs_[i]].name();
+        os << " + " << glhsSto_[i]  << " " << gasPhaseGases_[glhs_[i]].name();
     }
 
     os << " = ";

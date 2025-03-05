@@ -43,6 +43,10 @@ SourceFiles
 
 namespace Foam
 {
+// Forward declaration of friend functions and operators
+class heterogeneousConstRho;
+
+inline Ostream& operator<<(Ostream&, const heterogeneousConstRho&);
 
 /*---------------------------------------------------------------------------*\
                            Class constRho Declaration
@@ -78,6 +82,11 @@ public:
 
 
     // Member functions
+        //- Return the instantiated type name
+        static word typeName()
+        {
+            return "heterogeneousConstRho";
+        }
 
         //- Return density [kg/m3]
         inline scalar rho(scalar T) const;

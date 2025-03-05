@@ -43,11 +43,12 @@ inline Foam::solidArrheniusReactionRate::solidArrheniusReactionRate
     const speciesTable&,
     Istream& is
 )
-:
-    A_(readScalar(is.readBegin("solidArrheniusReaction(Istream&)"))),
-    Ta_(readScalar(is)),
-    Tcrit_(readScalar(is))
-{}
+{
+    is.readBegin("solidArrheniusReaction(Istream&)");
+    A_ = scalar(readScalar(is));
+    Ta_ = scalar(readScalar(is));
+    Tcrit_ = scalar(readScalar(is));
+}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -59,7 +60,7 @@ inline Foam::scalar Foam::solidArrheniusReactionRate::operator()
     const scalarField&
 ) const
 
-// eqZx2uHGn001
+// eqId (5)
 {
     scalar ak = A_;
 

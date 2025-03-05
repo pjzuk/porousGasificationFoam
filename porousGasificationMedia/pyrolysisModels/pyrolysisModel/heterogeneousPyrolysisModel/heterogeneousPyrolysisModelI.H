@@ -45,4 +45,5 @@ Foam::heterogeneousPyrolysisModels::heterogeneousPyrolysisModel::solution() cons
 {
     return mesh_.solutionDict();
 }
+
 // ************************************************************************* //

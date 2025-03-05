@@ -1,9 +1,9 @@
 /*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | foam-extend: Open Source CFD                    |
-|  \\    /   O peration     | Version:     4.1                                |
-|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
-|    \\/     M anipulation  |                                                 |
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
@@ -17,16 +17,17 @@ FoamFile
 
 solvers
 {
-    rho 
+    "(rho|rhoFinal)"
     {
         solver          diagonal;
     }
+
     p
     {
         solver           PCG;
         preconditioner   DIC;
         tolerance        1e-6;
-        relTol           0;
+        relTol           1e-2;
     }
 
     pFinal
@@ -35,13 +36,20 @@ solvers
         relTol           0.0;
     }
 
-    "(U|hs|Yi|Ys|porosity)"
+
+    "(U|h|Yi|Ys|porosity)"
     {
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-06;
-        relTol          0;
+        relTol          0.01;
     }
+
+    "(U|h|Yi|Ys|porosity)Final"
+    {
+        $U;
+        relTol      0;
+    } 
 
     Ts
     {

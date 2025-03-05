@@ -21,8 +21,16 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+Class
+    Foam::pipeCONV
+
 Description
-    pipe heat transfer model
+    Pipe heat transfer model
+
+    Porosity is modelled as a collection of parallel pipes. This models assumes
+    that the porous medium with initial porosity \f$ \epsilon_0 \f$ has a regular
+    lattice of parallel pipes with initial radius \f$ a_{c0} \f$. Constant
+    number of pipes is assumed. Its radii evolve in time while porosity changes.
 
 SourceFiles
     pipe.C
@@ -33,6 +41,7 @@ SourceFiles
 #define pipe_H
 
 #include "heatTransferModel.H"
+#include "fluidThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -40,7 +49,7 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class const Declaration
+                           Class pipe Declaration
 \*---------------------------------------------------------------------------*/
 
 class pipeCONV
@@ -50,11 +59,26 @@ class pipeCONV
 private:
 
     scalar pipeRadius_;
+
+    //- Velocity.
     const volVectorField& Up_;
+
+    //- Gas density
     const volScalarField& rhop_;
+
+    //- Thermal diffusivity [kg/m/s]
     const volScalarField& alphap_;
+
+    //- Dynamic viscosity [kg/m/s]
     const volScalarField& mup_;
-    const basicThermo& thermop_;
+
+    //- Reference to the fundamental fluid thermodynamic properties
+    const fluidThermo& thermop_;
+
+    // Private member functions
+
+        //- Gas thermal conductivity
+        scalar kf(const label cellI, const scalar Cp) const;
 
 public:
 
@@ -67,17 +91,18 @@ public:
         //- Construct from components
         pipeCONV
         (
-            const volScalarField& por,
-	        const volScalarField& por0
+            const volScalarField& porosity,
+            const volScalarField& initialPorosity
         );
+
 
     // Selectors
 
         //- Return a reference to the selected heatTransfer model
         static autoPtr<pipeCONV> New
         (
-            const volScalarField& por,
-	        const volScalarField& por0
+            const volScalarField& porosity,
+            const volScalarField& initialPorosity
         );
 
 
@@ -88,7 +113,7 @@ public:
 
     // Member Functions
 
-        //- Return the field for heat transfer between solid/gas on surfaces
+        //- Return the field for heat transfer between solid/gas.
         virtual tmp<volScalarField> CONV() const;
 
         //- Read heatTransferProperties dictionary

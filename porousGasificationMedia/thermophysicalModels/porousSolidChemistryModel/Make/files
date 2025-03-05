@@ -1,0 +1,8 @@
+porousSolidChemistryModel/basicPorousChemistryModel/basicPorousChemistryModel.C
+porousSolidChemistryModel/porousThermoSolidChemistryModel/porousThermoSolidChemistryModels.C
+
+solidChemistrySolver/solidChemistrySolver/solidChemistrySolvers.C
+
+/*functionObjects/specieReactionRates/specieReactionRates.C*/
+
+LIB = $(FOAM_USER_LIBBIN)/libporousSolidChemistryModel

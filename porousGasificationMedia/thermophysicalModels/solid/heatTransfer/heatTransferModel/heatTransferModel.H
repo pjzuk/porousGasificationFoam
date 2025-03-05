@@ -21,22 +21,24 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Namespace
-    Foam::incompressible::heatTransferModels
-
-Description
-    Namespace for incompressible heatTransfer heatTransfer models.
-
 Class
-    Foam::incompressible::heatTransferModel
+    Foam::heatTransferModel
 
 Description
-    Abstract base class for incompressible heatTransfer models
-    (RAS, LES and laminar).
+    Interface of the base class for the convective heat transfer models
+    between the gas and solid.
+
+    The convective heat transfer between the gas and solid is approximated as:
+    \f[
+        q_{CONV} = h_{CONV}  \sum (T^{fluid} - T^{solid}),
+    \f]
+    where:
+        - \f$ h_{CONV} \f$ -- Convective heat transfer coefficient
+        - \f$ \sum \f$ -- Surface area to volume ratio
+        - T -- temperature
 
 SourceFiles
     heatTransferModel.C
-    newTurbulenceModel.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -44,7 +46,7 @@ SourceFiles
 #define heatTransferModel_H
 
 #include "primitiveFieldsFwd.H"
-#include "foamTime.H"
+#include "Time.H"
 #include "IOdictionary.H"
 #include "volFieldsFwd.H"
 #include "surfaceFieldsFwd.H"
@@ -52,7 +54,7 @@ SourceFiles
 #include "autoPtr.H"
 #include "runTimeSelectionTables.H"
 #include "fvMesh.H"
-#include "basicThermo.H"
+#include "fluidThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -63,6 +65,7 @@ namespace Foam
                            Class heatTransferModel Declaration
 \*---------------------------------------------------------------------------*/
 
+//- The heatTransferModel class
 class heatTransferModel
 :
     public IOdictionary
@@ -72,10 +75,17 @@ protected:
 
     // Protected data
 
-	    const Time& runTime_;
+        //- Reference to the time database..
+        const Time& runTime_;
+
+        //- Reference to the mesh database.
         const fvMesh& mesh_;
-        const volScalarField& por_;
-        const volScalarField& por0_;
+
+        //- Porosity.
+        const volScalarField& porosity_;
+
+        //- Initial porosity.
+        const volScalarField& initialPorosity_;
 
 private:
 
@@ -94,33 +104,35 @@ public:
     TypeName("heatTransferModel");
 
     // Declare run-time New selection table
-
         declareRunTimeNewSelectionTable
         (
             autoPtr,
             heatTransferModel,
             porosity,
             (
-                const volScalarField& por, const volScalarField& por0
+                const volScalarField& porosity, const volScalarField& initialPorosity
             ),
-            (por,por0)
+            (porosity,initialPorosity)
         );
 
 
     // Constructors
 
-    //- Construct from porosity
+        //- Construct from porosity
         heatTransferModel
         (
-            const volScalarField& por,
-	        const volScalarField& por0
+            const volScalarField& porosity,
+            const volScalarField& initialPorosity
         );
-
 
     // Selectors
 
-        //- Return a reference to the selected heatTransfer model
-	static autoPtr<heatTransferModel> New(const volScalarField&,const volScalarField&);
+        //- Return a reference to the selected heatTransfer model.
+        static autoPtr<heatTransferModel> New
+        (
+            const volScalarField& porosity,
+            const volScalarField& initialPorosity
+        );
 
 
     //- Destructor
@@ -130,32 +142,32 @@ public:
 
     // Member Functions
 
-        //- Access function to flux field
-        inline const volScalarField& por() const
+        //- Return the porosity field
+        inline const volScalarField& porosity() const
         {
-            return por_;
+            return porosity_;
         }
 
-        inline const volScalarField& por0() const
+        //- Return the initial porosity field
+        inline const volScalarField& initialPorosity() const
         {
-            return por0_;
+            return initialPorosity_;
         }
+
         //- Return the heatTransfer coefficient
         virtual tmp<volScalarField> CONV() const = 0;
 
         //- Read heatTransferProperties dictionary
         virtual bool read() = 0;
 
-        //- Default dummy write function
+        //- Default dummy write function, does nothing
         virtual bool writeData(Ostream&) const
         {
             return true;
         }
 };
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

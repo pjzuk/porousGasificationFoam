@@ -24,37 +24,56 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "cylinder.H"
-#include "foamTime.H"
+#include "Time.H"
 #include "surfaceFields.H"
 #include "volFields.H"
 #include "addToRunTimeSelectionTable.H"
-      
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(cylinderCONV, 0);
-addToRunTimeSelectionTable(heatTransferModel, cylinderCONV, porosity);
+namespace Foam
+{
+    defineTypeNameAndDebug(cylinderCONV, 0);
+    addToRunTimeSelectionTable(heatTransferModel, cylinderCONV, porosity);
+}
+
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+Foam::scalar Foam::cylinderCONV::Re(const label cellI) const
+{
+    return 2 * cylinderRadius_ * rhop_[cellI] * mag(Up_[cellI]) / mup_[cellI];
+}
+
+Foam::scalar Foam::cylinderCONV::Pr(const label cellI) const
+{
+    return mup_[cellI] / alphap_[cellI];
+}
+
+Foam::scalar Foam::cylinderCONV::Nu(const label cellI) const //eqZx2uHGn019
+{
+    return 2. + 1.1 * pow(Re(cellI), 0.6) * cbrt(Pr(cellI));
+}
+
+Foam::scalar Foam::cylinderCONV::kf(const label cellI) const
+{
+    return thermop_.Cp().ref()[cellI] * alphap_[cellI] * rhop_[cellI];
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-cylinderCONV::cylinderCONV
+Foam::cylinderCONV::cylinderCONV
 (
-    const volScalarField& por,
-    const volScalarField& por0
+    const volScalarField& porosity,
+    const volScalarField& initialPorosity
 )
 :
-    heatTransferModel(por,por0),
+    heatTransferModel(porosity,initialPorosity),
     cylinderRadius_(1.0),
     Up_(db().lookupObject<volVectorField>("U")),
     rhop_(db().lookupObject<volScalarField>("rho")),
-    alphap_(db().lookupObject<volScalarField>("alpha")),
-    mup_(db().lookupObject<volScalarField>("mu")),
-    thermop_(db().lookupObject<basicThermo>("thermophysicalProperties"))
+    alphap_(db().lookupObject<volScalarField>("thermo:alpha")),
+    mup_(db().lookupObject<volScalarField>("thermo:mu")),
+    thermop_(db().lookupObject<fluidThermo>("thermophysicalProperties"))
 {
    read();
 }
@@ -62,24 +81,22 @@ cylinderCONV::cylinderCONV
 
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-autoPtr<cylinderCONV> cylinderCONV::New
+Foam::autoPtr<Foam::cylinderCONV> Foam::cylinderCONV::New
 (
-    const volScalarField& por,
-    const volScalarField& por0
+    const volScalarField& porosity,
+    const volScalarField& initialPorosity
 )
 {
     return autoPtr<cylinderCONV>
     (
-        new cylinderCONV( por,por0)
+        new cylinderCONV(porosity,initialPorosity)
     );
 }
 
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-tmp<volScalarField> cylinderCONV::CONV() const
+Foam::tmp<Foam::volScalarField> Foam::cylinderCONV::CONV() const
 {
-// eqZx2uHGn007
     Foam::tmp<Foam::volScalarField> CONVloc_ = Foam::tmp<Foam::volScalarField>
     (
         new volScalarField
@@ -100,24 +117,23 @@ tmp<volScalarField> cylinderCONV::CONV() const
         )
     );
 
-    volScalarField& Cp = thermop_.Cp()();
-    forAll (CONVloc_(),cellI)
+    forAll (CONVloc_(), cellI)
     {
-	    CONVloc_()[cellI] = pow(1 - por()[cellI],0.5)*pow(1-por0()[cellI],0.5)*2.0/cylinderRadius_*
-              (1. + 0.55
-                *Foam::pow(2*cylinderRadius_*rhop_[cellI]*mag(Up_[cellI])/mup_[cellI],0.6)
-                *Foam::pow(mup_[cellI]/alphap_[cellI],0.33333333333))
-                *Cp[cellI]*alphap_[cellI]*rhop_[cellI]/cylinderRadius_;  //eqZx2uHGn019 eqZx2uHGn020 
+        // Surface area to volume ratio.
+        scalar SAV = 2.0 * sqrt(1 - porosity()[cellI]) * sqrt(1 - initialPorosity()[cellI])
+                     / cylinderRadius_; // eqZx2uHGn007
+
+        scalar h_conv = Nu(cellI) * kf(cellI) / (2 * cylinderRadius_); //eqZx2uHGn020
+
+        CONVloc_.ref()[cellI] = SAV * h_conv;
     }
 
     return CONVloc_;
-
 }
 
-bool cylinderCONV::read()
+bool Foam::cylinderCONV::read()
 {
-
-	IOdictionary dict
+    IOdictionary dict
         (
             IOobject
             (
@@ -133,12 +149,9 @@ bool cylinderCONV::read()
     const dictionary& params = dict.subDict("Parameters");
 
     params.lookup("cylinderRadius") >> cylinderRadius_;
-    
+
 
     return true;
 }
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

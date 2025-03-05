@@ -24,7 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "emptyST.H"
-#include "foamTime.H"
+#include "Time.H"
 #include "surfaceFields.H"
 #include "volFields.H"
 #include "addToRunTimeSelectionTable.H"

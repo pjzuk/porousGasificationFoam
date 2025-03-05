@@ -1,9 +1,9 @@
 /*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | foam-extend: Open Source CFD                    |
-|  \\    /   O peration     | Version:     4.1                                |
-|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
-|    \\/     M anipulation  |                                                 |
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
@@ -37,7 +37,7 @@ writeFormat     ascii;
 
 writePrecision  10;
 
-writeCompression uncompressed;
+writeCompression off;
 
 timeFormat      general;
 
@@ -51,25 +51,21 @@ maxCo      0.2;
 
 maxDi      5000;
 
-//maxDeltaT	0.01;
-
 functions
-(
+{
     minMax
     {
         type        fieldMinMax;
-        functionObjectLibs ("libfieldFunctionObjects.so");
-        outputControl   timeStep;
-        outputInterval  1;
-        write       no;
-        log         yes;
-        location    yes;
-        mode        magnitude;
+        libs ("libfieldFunctionObjects.so");
         fields
         (
             p
         );
+        log             yes;
+        location        no;
+        writeControl    timeStep;
+        writeInterval   1;
     }
-);
+}
 
 // ************************************************************************* //

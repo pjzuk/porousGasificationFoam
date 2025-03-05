@@ -87,10 +87,6 @@ private:
         //- Look for the component index in the reaction
         label componentIndex(bool& isGas, Istream& is);
 
-        //- Disallow default bitwise assignment
-        void operator=(const solidReaction&);
-
-
 public:
 
     //- Runtime type information

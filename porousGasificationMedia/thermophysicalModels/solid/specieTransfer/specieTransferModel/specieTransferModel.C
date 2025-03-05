@@ -75,7 +75,7 @@ autoPtr<specieTransferModel> specieTransferModel::New
     // get model name, but do not register the dictionary
     // otherwise it is registered in the database twice
 
-    porosityConstructorTable::iterator cstrIter;
+    porosityConstructorTableType::iterator cstrIter;
 
     if (por.db().lookupObject<dictionary>("chemistryProperties").lookupOrDefault("diffusionLimitedReactions",false))
     {

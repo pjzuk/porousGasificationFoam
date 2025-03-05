@@ -103,6 +103,12 @@ public:
 
     // Member functions
 
+        //- Return the instantiated type name
+        static word typeName()
+        {
+            return "exponential<" + thermo::typeName() + '>';
+        }
+
         //- Thermal conductivity [W/mK]
         inline scalar K(const scalar T) const;
 
@@ -110,13 +116,12 @@ public:
         inline scalar alpha(const scalar T) const;
 
 
-    // Ostream Operator
-
-        friend Ostream& operator<< <thermo>
-        (
-            Ostream&,
-            const exponentialSolidTransport&
-        );
+    //- Ostream Operator
+    friend Ostream& operator<< <thermo>
+    (
+        Ostream&,
+        const exponentialSolidTransport&
+    );
 };
 
 

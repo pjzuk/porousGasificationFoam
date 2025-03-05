@@ -28,21 +28,18 @@ License
 #include "surfaceFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 namespace Foam
 {
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-defineTypeNameAndDebug(heatTransferModel, 0);
-defineRunTimeSelectionTable(heatTransferModel, porosity);
+    defineTypeNameAndDebug(heatTransferModel, 0);
+    defineRunTimeSelectionTable(heatTransferModel, porosity);
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-heatTransferModel::heatTransferModel
+Foam::heatTransferModel::heatTransferModel
 (
-    const volScalarField& por,
-    const volScalarField& por0
+    const volScalarField& porosity,
+    const volScalarField& initialPorosity
 )
 :
     IOdictionary
@@ -50,29 +47,28 @@ heatTransferModel::heatTransferModel
         IOobject
         (
             "heatTransferProperties",
-            por.mesh().time().constant(),
-            por.mesh(),
+            porosity.mesh().time().constant(),
+            porosity.mesh(),
             IOobject::NO_READ,
             IOobject::NO_WRITE
         )
     ),
-    runTime_(por.time()),
-    mesh_(por.mesh()),
-    por_(por),
-    por0_(por0)
+    runTime_(porosity.time()),
+    mesh_(porosity.mesh()),
+    porosity_(porosity),
+    initialPorosity_(initialPorosity)
 {}
 
 
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-
-autoPtr<heatTransferModel> heatTransferModel::New
+Foam::autoPtr<Foam::heatTransferModel> Foam::heatTransferModel::New
 (
-    const volScalarField& por,
-    const volScalarField& por0
+    const volScalarField& porosity,
+    const volScalarField& initialPorosity
 )
 {
-    // get model name, but do not register the dictionary
+    // Get model name, but do not register the dictionary
     // otherwise it is registered in the database twice
     const word modelType
     (
@@ -81,8 +77,8 @@ autoPtr<heatTransferModel> heatTransferModel::New
             IOobject
             (
                 "heatTransferProperties",
-                por.time().constant(),
-                por.db(),
+                porosity.time().constant(),
+                porosity.db(),
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE,
                 false
@@ -92,7 +88,7 @@ autoPtr<heatTransferModel> heatTransferModel::New
 
     Info<< "Selecting heatTransfer model type " << modelType << endl;
 
-    porosityConstructorTable::iterator cstrIter =
+    auto cstrIter =
         porosityConstructorTablePtr_->find(modelType);
 
     if (cstrIter == porosityConstructorTablePtr_->end())
@@ -111,16 +107,9 @@ autoPtr<heatTransferModel> heatTransferModel::New
  
     return autoPtr<heatTransferModel>
     (
-        cstrIter()(por,por0)
+        cstrIter()(porosity,initialPorosity)
     );
 
 }
 
-
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
-
-// ************************************************************************* //

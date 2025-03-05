@@ -1,3 +1,0 @@
-porousReactingZone.C
-
-LIB = $(FOAM_HGS)/lib/libporousReactingZone

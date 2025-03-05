@@ -37,7 +37,7 @@ SourceFiles
 #ifndef constSolidThermo_H
 #define constSolidThermo_H
 
-#include "specie.H"
+#include "thermodynamicConstants.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -65,7 +65,10 @@ class constSolidThermo
 {
     // Private data
 
+        //- Heat capacity at constant pressure [J/(kg K)]
         scalar Cp_;
+
+        //- Enthalpy of formation [J/kg]
         scalar Hf_;
 
 
@@ -98,6 +101,12 @@ public:
 
 
     // Member Functions
+
+        //- Return the instantiated type name
+        static word typeName()
+        {
+            return "constThermo<" + rhoType::typeName() + '>';
+        }
 
         // Fundamental properties
 

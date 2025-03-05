@@ -26,8 +26,6 @@ Application
 
 Description
     Apllication for creation of porosity field and Darcy resistance tensor field
-    created by Pawel Jan Zuk 
-
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
@@ -49,7 +47,7 @@ int main(int argc, char *argv[])
 #include "medium.H"
 
 Info<<"Writing modified porosityF, Df and anisotropyK \n"<<endl;
-	
+
 porosityF.write();
 Df.write();
 anisotropyK.write();

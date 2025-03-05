@@ -1,7 +1,0 @@
-solidChemistryModel/solidChemistryModel.C
-solidChemistryModel/solidChemistryModelNew.C
-solidChemistryModel/solidChemistryModels.C
-
-solidChemistrySolver/solidChemistrySolver/makeSolidChemistrySolvers.C
-
-LIB = $(FOAM_HGS)/lib/libHGSsolidChemistryModel

@@ -21,8 +21,11 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+Class
+    Foam::constCONV
+
 Description
-    costant heat transfer model
+    Costant heat transfer model
 
 SourceFiles
     const.C
@@ -46,7 +49,9 @@ namespace Foam
 class constCONV
 :
     public heatTransferModel
+
 {
+
 private:
 
     scalar hCoeff_;
@@ -63,8 +68,8 @@ public:
         //- Construct from components
         constCONV
         (
-            const volScalarField& por,
-	        const volScalarField& por0
+            const volScalarField& porosity,
+            const volScalarField& initialPorosity
         );
 
 
@@ -73,8 +78,8 @@ public:
         //- Return a reference to the selected heatTransfer model
         static autoPtr<constCONV> New
         (
-            const volScalarField& por,
-	        const volScalarField& por0
+            const volScalarField& porosity,
+            const volScalarField& initialPorosity
         );
 
 
@@ -85,7 +90,7 @@ public:
 
     // Member Functions
 
-        //- Return the field for heat transfer between solid/gas
+        //- Return the field for heat transfer between solid/gas.
         virtual tmp<volScalarField> CONV() const;
 
         //- Read heatTransferProperties dictionary

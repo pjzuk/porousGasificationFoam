@@ -1,9 +1,9 @@
 /*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | foam-extend: Open Source CFD                    |
-|  \\    /   O peration     | Version:     4.1                                |
-|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
-|    \\/     M anipulation  |                                                 |
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
@@ -25,21 +25,17 @@ heterogeneousAbsorptionEmissionModel heterogeneousConstantAbsorptionEmission;
 
 heterogeneousConstantAbsorptionEmissionCoeffs
 {
-    a               a  [ 0 -1  0 0 0 0 0 ] 1.0e-2;
-    as              as [ 0 -1  0 0 0 0 0 ] 1.0e-2;
-    borderAs        borderAs [ 0 -1  0 0 0 0 0 ] 15;
-    borderEs        borderEs [ 0  0  0 0 0 0 0 ] 15.0;
+    a               a  [ 0 -1  0 0 0 0 0 ] 0;
+    as              as [ 0 -1  0 0 0 0 0 ] 0;
+    borderAs        borderAs [ 0 -1  0 0 0 0 0 ] 180;
     E               E  [ 1 -1 -3 0 0 0 0 ] 0.0;
     borderL         borderL  [ 0 1 0 0 0 0 0 ] 1.5e-3;
 }
 
 scatterModel    constantScatter;
 
-constantScatterCoeffs
-{
-    sigma           sigma [ 0 -1 0 0 0 0 0 ] 0;
-    C               C [ 0 0 0 0 0 0 0 ] 0;
-}
+sigma           sigma [ 0 -1 0 0 0 0 0 ] 1;
+C               C [ 0 0 0 0 0 0 0 ] 1; 
 
 
 // ************************************************************************* //

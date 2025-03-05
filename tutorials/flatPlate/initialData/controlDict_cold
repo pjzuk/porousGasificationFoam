@@ -1,14 +1,14 @@
 /*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | foam-extend: Open Source CFD                    |
-|  \\    /   O peration     | Version:     4.1                                |
-|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
-|    \\/     M anipulation  |                                                 |
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
     version     2.1;
-    format      ascii;
+    format      binary;
     class       dictionary;
     location    "system";
     object      controlDict;
@@ -33,11 +33,11 @@ writeInterval   20;
 
 purgeWrite      0;
 
-writeFormat     ascii;
+writeFormat     binary;
 
 writePrecision  10;
 
-writeCompression uncompressed;
+writeCompression off;
 
 timeFormat      general;
 
@@ -54,13 +54,7 @@ maxDeltaT   0.05;
 maxDi   5000;
 
 functions
-(
-    nuField 
-    {
-        type writeRegisteredObject;
-        functionObjectLibs ("libIOFunctionObjects.so");
-        objectNames ("mu" "alpha");
-        outputControl outputTime;
-    }
-);
+{
+    #includeFunc  writeObjects(thermo:mu,thermo:alpha)
+}
 // ************************************************************************* //

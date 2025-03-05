@@ -1,8 +1,14 @@
+/** @file
+ * Main solver
+ * @date 10.04.2020
+ */
+
+
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -26,70 +32,83 @@ Application
 
 Description
     Solver for reactive flow through porous medium
-    created by Pawel Jan Zuk
 
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
-#include "turbulenceModel.H"
-#include "psiChemistryModel.H"
-#include "chemistrySolver.H"
-#include "porousReactingZone.H"
+#include "turbulentFluidThermoModel.H"
+#include "psiReactionThermo.H"
+#include "CombustionModel.H"
 #include "multivariateScheme.H"
 #include "pimpleControl.H"
-#include "basicHGSSolidThermo.H"
-#include "solidChemistryModel.H"
+#include "pressureControl.H"
+#include "fvOptions.H"
+#include "localEulerDdtScheme.H"
+#include "fvcSmooth.H"
+#include "fieldPorosityModel.H"
+#include "porousThermoSolidChemistryModel.H"
 #include "heterogeneousPyrolysisModel.H"
 #include "heterogeneousRadiationModel.H"
+#include "HGSSolidThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 int main(int argc, char *argv[])
 {
-    
-    #include "setRootCase.H"
+    #include "postProcess.H"
+    #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
-
-    pimpleControl pimple(mesh);
-
-    #include "readChemistryProperties.H"
-    #include "readGravitationalAcceleration.H"
-    #include "createFields.H"
-    #include "initContinuityErrs.H"
+    #include "createControl.H"
     #include "createTimeControls.H"
-    #include "compressibleCourantNo.H"
-    #include "setInitialDeltaT.H"
+    #include "initContinuityErrs.H"
+    #include "createFields.H"
+    #include "createFieldRefs.H"
+    #include "createPorosity.H"
     #include "createPyrolysisModel.H"
     #include "readPyrolysisTimeControls.H"
-    #include "createPorosity.H"
     #include "createHeterogeneousRadiationModel.H"
+    #include "readChemistryTimeControls.H"
+
+    turbulence->validate();
+    if (!LTS)
+    {
+        #include "compressibleCourantNo.H"
+        #include "setInitialDeltaT.H"
+    }
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
- 
+
     Info<< "\nStarting time loop\n" << endl;
 
     while (runTime.run())
     {
-
         #include "readTimeControls.H"
 
-        Info<< "Time = " << runTime.timeName() << nl;
-        #include "compressibleCourantNo.H"
-        #include "solidRegionDiffusionNo.H"
-        #include "setMultiRegionDeltaT.H"
-        #include "updateChemistryTimeStep.H"
-        Info<< "deltaT = " <<  runTime.deltaT().value() << nl << endl;
+        if (LTS)
+        {
+            #include "setRDeltaT.H"
+        }
+        else
+        {
+            #include "compressibleCourantNo.H"
+            #include "solidRegionDiffusionNo.H"
+            #include "setMultiRegionDeltaT.H"
+            #include "updateChemistryTimeStep.H"
+
+            Info<< "deltaT = " <<  runTime.deltaT().value() << endl;
+        }
+
+        runTime++;
+
+        Info<< "Time = " << runTime.timeName() << nl << endl;
 
         #include "radiation.H"
         pyrolysisZone.evolve();
-        #include "chemistry.H"
+
         #include "rhoEqn.H"
 
-        // --- PIMPLE loop
         while (pimple.loop())
         {
-
             if (pimple.nCorrPIMPLE() > 0)
             {
                 p.storePrevIter();
@@ -99,34 +118,37 @@ int main(int argc, char *argv[])
 
             #include "UEqn.H"
             #include "YEqn.H"
-            #include "hsEqn.H"
+            #include "EEqn.H"
 
-            // --- PISO loop
-	        while (pimple.correct())            
+            // --- Pressure corrector loop
+            while (pimple.correct())
             {
-                #include "pEqn.H"
+                if (pimple.consistent())
+                {
+                    #include "pcEqn.H"
+                }
+                else
+                {
+                    #include "pEqn.H"
+                }
             }
         }
 
-        turbulence->correct();
+        if (pimple.turbCorr())
+        {
+            turbulence->correct();
+        }
+
         rho = thermo.rho();
 
         Info<< "rho max/min : " << max(rho).value()
             << " " << min(rho).value() << endl;
-
-        if (runTime.write())
-        {
-            chemistry.dQ()().write();
-        }
 
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
             << nl << endl;
-
-        runTime++;
-
     }
 
     Info<< "End\n" << endl;

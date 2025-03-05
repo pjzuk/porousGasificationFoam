@@ -25,7 +25,7 @@ License
 
 #include "heterogeneousPyrolysisModel.H"
 #include "fvMesh.H"
-#include "foamTime.H"
+#include "Time.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -36,9 +36,15 @@ namespace heterogeneousPyrolysisModels
 
 // * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
 
-autoPtr<heterogeneousPyrolysisModel> heterogeneousPyrolysisModel::New(const fvMesh& mesh,  psiChemistryModel& gasChemistry, volScalarField& whereIs)
+autoPtr<heterogeneousPyrolysisModel> heterogeneousPyrolysisModel::New
+(
+    const fvMesh& mesh,
+    HGSSolidThermo& solidThermo,
+    psiReactionThermo& gasThermo,
+    volScalarField& whereIs
+)
 {
-    // get model name, but do not register the dictionary
+    // Get model name, but do not register the dictionary.
     const word modelType
     (
         IOdictionary
@@ -57,7 +63,7 @@ autoPtr<heterogeneousPyrolysisModel> heterogeneousPyrolysisModel::New(const fvMe
 
     Info<< "Selecting heterogeneousPyrolysisModel " << modelType << endl;
 
-    noRadiationConstructorTable::iterator cstrIter =
+    auto cstrIter =
         noRadiationConstructorTablePtr_->find(modelType);
 
     if (cstrIter == noRadiationConstructorTablePtr_->end())
@@ -69,18 +75,19 @@ autoPtr<heterogeneousPyrolysisModel> heterogeneousPyrolysisModel::New(const fvMe
             << exit(FatalError);
     }
 
-    return autoPtr<heterogeneousPyrolysisModel>(cstrIter()(modelType, mesh, gasChemistry, whereIs));
+    return autoPtr<heterogeneousPyrolysisModel>(cstrIter()(modelType, mesh, solidThermo, gasThermo, whereIs));
 }
 
 autoPtr<heterogeneousPyrolysisModel> heterogeneousPyrolysisModel::New
 (
     const fvMesh& mesh,
-    psiChemistryModel& gasChemistry,
+    HGSSolidThermo& solidThermo,
+    psiReactionThermo& gasThermo,
     volScalarField& whereIs,
     volScalarField& radiation
 )
 {
-    // get model name, but do not register the dictionary
+    // Get model name, but do not register the dictionary.
     const word modelType
     (
         IOdictionary
@@ -99,7 +106,7 @@ autoPtr<heterogeneousPyrolysisModel> heterogeneousPyrolysisModel::New
 
     Info<< "Selecting heterogeneousPyrolysisModel " << modelType << endl;
 
-    radiationConstructorTable::iterator cstrIter =
+    auto cstrIter =
         radiationConstructorTablePtr_->find(modelType);
 
     if (cstrIter == radiationConstructorTablePtr_->end())
@@ -111,11 +118,11 @@ autoPtr<heterogeneousPyrolysisModel> heterogeneousPyrolysisModel::New
             << exit(FatalError);
     }
 
-    return autoPtr<heterogeneousPyrolysisModel>(cstrIter()(modelType, mesh, gasChemistry, whereIs, radiation));
+    return autoPtr<heterogeneousPyrolysisModel>(cstrIter()(modelType, mesh, solidThermo, gasThermo, whereIs, radiation));
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace surfaceFilmModels
+} // End namespace heterogeneousPyrolysisModels
 } // End namespace Foam
 
 // ************************************************************************* //

@@ -1,35 +1,33 @@
-Info<< nl << "Reading thermophysicalProperties" << endl;
+#include "createRDeltaT.H"
 
-autoPtr<psiChemistryModel> pChemistry
-(
-    psiChemistryModel::New(mesh)
-);
+Info<< "Reading thermophysical properties\n" << endl;
+autoPtr<psiReactionThermo> pThermo(psiReactionThermo::New(mesh));
+psiReactionThermo& thermo = pThermo();
+thermo.validate(args.executable(), "h", "e");
 
-psiChemistryModel& chemistry = pChemistry();
-
-hsCombustionThermo& thermo = chemistry.thermo();
-
-basicMultiComponentMixture& composition = thermo.composition();	
-
+basicSpecieMixture& composition = thermo.composition();
 PtrList<volScalarField>& Y = composition.Y();
 
-word inertSpecie(thermo.lookup("inertSpecie"));
-
+const word inertSpecie(thermo.lookup("inertSpecie"));
+if (!composition.species().found(inertSpecie))
+{
+    FatalIOErrorIn(args.executable().c_str(), thermo)
+        << "Inert specie " << inertSpecie << " not found in available species "
+        << composition.species() << exit(FatalIOError);
+}
 Switch solveEnergy(thermo.lookupOrDefault("solveEnergy",true));
-
-Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (
     IOobject
     (
         "rho",
         runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE
+        mesh
     ),
     thermo.rho()
 );
+
+volScalarField& p = thermo.p();
 
 Info<< "Reading field U\n" << endl;
 volVectorField U
@@ -44,14 +42,6 @@ volVectorField U
     ),
     mesh
 );
-
-Info<< "Creating field kinetic energy K\n" << endl;
-volScalarField K("K", 0.5*magSqr(U));
-
-volScalarField& p = thermo.p();
-const volScalarField& psi = thermo.psi();
-volScalarField& hs = thermo.hs();
-const volScalarField& T = thermo.T();
 
 #include "compressibleCreatePhi.H"
 
@@ -69,6 +59,10 @@ volScalarField kappa
     dimensionedScalar("zero", dimless, 0.0)
 );
 
+pressureControl pressureControl(p, rho, pimple.dict(), false);
+
+mesh.setFluxRequired(p.name());
+
 Info << "Creating turbulence model.\n" << nl;
 autoPtr<compressible::turbulenceModel> turbulence
 (
@@ -81,23 +75,61 @@ autoPtr<compressible::turbulenceModel> turbulence
     )
 );
 
+volScalarField p_thermo
+(
+    IOobject
+    (
+        "p_thermo",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero", p.dimensions(), 0.0)
+);
+
+dimensionedScalar timeUnit("one", dimTime, 1.0);
+
+Info<< "Creating reaction model\n" << endl;
+autoPtr<CombustionModel<psiReactionThermo>> reaction
+(
+    CombustionModel<psiReactionThermo>::New(thermo, turbulence())
+);
+
+Info<< "Creating field dpdt\n" << endl;
+volScalarField dpdt
+(
+    IOobject
+    (        "dpdt",
+        runTime.timeName(),
+        mesh
+    ),
+    mesh,
+    dimensionedScalar(p.dimensions()/dimTime, 0)
+);
+
+Info<< "Creating field kinetic energy K\n" << endl;
+volScalarField K("K", 0.5*magSqr(U));
+
+
 multivariateSurfaceInterpolationScheme<scalar>::fieldTable fields;
 
 forAll(Y, i)
 {
     fields.add(Y[i]);
 }
-fields.add(hs);
+fields.add(thermo.he());
 
 volScalarField chemistrySh
 (
     IOobject
     (
-        "gasChemistrySh",
+        "chemistry::Sh",
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
-        IOobject::AUTO_WRITE
+        IOobject::NO_WRITE
     ),
     mesh,
     dimensionedScalar("chemistrySh", dimEnergy/dimTime/dimVolume, 0.0)
@@ -173,39 +205,28 @@ volScalarField radiationF
             IOobject::AUTO_WRITE
         ),
         mesh,
-	    dimensionedScalar("zero",dimMass/dimLength/pow3(dimTime),0.0)
+    dimensionedScalar("zero",dimMass/dimLength/pow3(dimTime),0.0)
 );
-
 
 volScalarField cellVolume
 (
-	IOobject
-	(
-		"cellVolume",
-		runTime.timeName(),
-		mesh,
-		IOobject::NO_READ,
-		IOobject::NO_WRITE
-	),
-	mesh,
-	dimensionedScalar("zero", dimVolume, 0.0)
+    IOobject
+    (
+        "cellVolume",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    mesh,
+    dimensionedScalar("zero", dimVolume, 0.0)
 );
 
 forAll(cellVolume,cellI)
 {
-	cellVolume[cellI] = mesh.V()[cellI];
+    cellVolume[cellI] = mesh.V()[cellI];
 }
 
-
-tmp<fv::convectionScheme<scalar> > mvConvection
-(
-    fv::convectionScheme<scalar>::New
-    (
-        mesh,
-        fields,
-        phi,
-        mesh.schemesDict().divScheme("div(phi,Yi)")
-    )
-);
-
-mesh.schemesDict().setFluxRequired(p.name());
+#include "readGravitationalAcceleration.H"
+#include "createMRF.H"
+#include "createFvOptions.H"

@@ -1,30 +1,32 @@
-#!/bin/bash
+#!/bin/sh
 
 source ./porousGasificationMediaDirectories
 
-# If folders already exist a warning message will be showed
 mkdir -p $WM_PROJECT_USER_DIR
 mkdir -p $WM_PROJECT_USER_DIR/applications
 mkdir -p $FOAM_HGS
 
-
+cp -r utilities $WM_PROJECT_USER_DIR/applications/
 cp -r porousGasificationFoam $WM_PROJECT_USER_DIR/applications/
-cp -r utilities/totalMassPorousGasificationFoam $WM_PROJECT_USER_DIR/applications/
-cp -r porousGasificationMedia/porousReactingMedia $FOAM_HGS/
+cp -r porousGasificationMedia/fieldPorosityModel $FOAM_HGS/
 cp -r porousGasificationMedia/thermophysicalModels $FOAM_HGS/
 cp -r porousGasificationMedia/pyrolysisModels $FOAM_HGS/
+cp -r porousGasificationMedia/radiationModels $FOAM_HGS/
 
-cd $FOAM_HGS/porousReactingMedia
-wmake libso
+cd $FOAM_HGS/fieldPorosityModel
+wmake -j libso
+
+cd $FOAM_HGS/radiationModels
+wmake -j libso
 
 cd $FOAM_HGS/thermophysicalModels
 ./Allwmake
 
 cd $FOAM_HGS/pyrolysisModels
-wmake libso
+wmake -j libso
 
 cd $WM_PROJECT_USER_DIR/applications/porousGasificationFoam
-wmake
+wmake -j
 
-cd $WM_PROJECT_USER_DIR/applications/totalMassPorousGasificationFoam
-wmake
+cd $WM_PROJECT_USER_DIR/applications/utilities
+./Allwmake

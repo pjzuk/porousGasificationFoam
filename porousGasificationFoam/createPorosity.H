@@ -1,2 +1,5 @@
-    Info<< "Creating porous zones" << nl << endl;
-    porousReactingZone pZone(mesh,porosityF);
+Info<< "Creating porous zones" << nl << endl;
+
+fieldPorosityModel pZones(mesh, porosityF);
+Switch pressureImplicitPorosity(false);
+

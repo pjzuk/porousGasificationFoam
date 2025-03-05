@@ -42,8 +42,8 @@ SourceFiles
 namespace Foam
 {
 
+// Forward declaration of friend functions and operators
 template<class thermo> class linearSolidTransport;
-
 template<class thermo>
 Ostream& operator<<
 (
@@ -91,12 +91,16 @@ public:
             const linearSolidTransport&
         );
 
-
         //- Construct from dictionary
         linearSolidTransport(const dictionary&);
 
-
     // Member functions
+
+        //- Return the instantiated type name
+        static word typeName()
+        {
+            return "linear<" + thermo::typeName() + '>';
+        }
 
         //- Thermal conductivity [W/mK]
         inline scalar K(const scalar T) const;

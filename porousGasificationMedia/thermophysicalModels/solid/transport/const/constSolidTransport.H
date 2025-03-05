@@ -46,11 +46,7 @@ namespace Foam
 template<class thermo> class constSolidTransport;
 
 template<class thermo>
-Ostream& operator<<
-(
-    Ostream&,
-    const constSolidTransport<thermo>&
-);
+Ostream& operator<<(Ostream&, const constSolidTransport<thermo>&);
 
 
 /*---------------------------------------------------------------------------*\
@@ -86,11 +82,16 @@ public:
         inline constSolidTransport(const word&, const constSolidTransport&);
 
         //- Construct from Istream
-        //constSolidTransport(Istream&);
         constSolidTransport(const dictionary&);
 
 
     // Member functions
+
+        //- Return the instantiated type name
+        static word typeName()
+        {
+            return "const<" + thermo::typeName() + '>';
+        }
 
         //- Thermal conductivity [W/mK]
         inline scalar K(const scalar T) const;

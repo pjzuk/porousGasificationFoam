@@ -22,11 +22,18 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::heterogeneousPyrolysisModel
+    Foam::heterogeneousPyrolysisModels::heterogeneousPyrolysisModel
 
 Description
     base class for heterogeneusPyrolysisModel
-    created by Pawel Jan Zuk
+
+    The heterogeneousPyrolysisModel class.
+    It is an implementation of a base class for different pyrolysis models. This
+    class creates all necessary fields of solid properties (e.g., mass fields of
+    solid components) and integrates physical submodels for the solid state
+    (e.g., radiation, kinetics, conduction). For each cell containing the solid
+    phase, the source terms for the gas- and solid-phase equations
+    are calculated.
 
 SourceFiles
     heterogeneousPyrolysisModelI.H
@@ -39,9 +46,8 @@ SourceFiles
 
 #include "runTimeSelectionTables.H"
 #include "volFieldsFwd.H"
-#include "solidChemistryModel.H"
-#include "basicHGSSolidThermo.H"
-#include "psiChemistryModel.H"
+#include "psiReactionThermo.H"
+#include "HGSSolidThermo.H"
 #include "heatTransferModel.H"
 #include "specieTransferModel.H"
 
@@ -58,7 +64,7 @@ namespace heterogeneousPyrolysisModels
 {
 
 /*---------------------------------------------------------------------------*\
-                      Class heterogeneousPyrolysisModel Declaration
+                        heterogeneousPyrolysisModel
 \*---------------------------------------------------------------------------*/
 
 class heterogeneousPyrolysisModel
@@ -84,8 +90,8 @@ protected:
         //- Model coefficients dictionary
         dictionary coeffs_;
 
-	//- Numerical control parameter
-	scalar reactionDeltaMin_;
+        //-  Numerical control parameter
+        scalar reactionDeltaMin_;
 
     // Protected Member Functions
 
@@ -113,12 +119,11 @@ public:
     //- Runtime type information
     TypeName("heterogeneousPyrolysisModel");
 
-
         declareRunTimeSelectionTable
         (
              autoPtr,
              heterogeneousPyrolysisModel,
-	     mesh,
+             mesh,
              (
                 const word& modelType,
                 const fvMesh& mesh
@@ -126,87 +131,89 @@ public:
              (modelType, mesh)
         );
 
-
         declareRunTimeSelectionTable
         (
-             autoPtr,
-             heterogeneousPyrolysisModel,
-	     noRadiation,
-             (
+            autoPtr,
+            heterogeneousPyrolysisModel,
+            noRadiation,
+            (
                 const word& modelType,
                 const fvMesh& mesh,
-                psiChemistryModel& gasChemistry,
-		volScalarField& whereIs
+                HGSSolidThermo& solidThermo,
+                psiReactionThermo& gasThermo,
+                volScalarField& whereIs
              ),
-             (modelType, mesh, gasChemistry, whereIs)
+             (modelType, mesh, solidThermo, gasThermo, whereIs)
         );
-
-
+        
         declareRunTimeSelectionTable
-         (
-             autoPtr,
-             heterogeneousPyrolysisModel,
-	     radiation,
-             (
+        (
+            autoPtr,
+            heterogeneousPyrolysisModel,
+            radiation,
+            (
                 const word& modelType,
                 const fvMesh& mesh,
-                psiChemistryModel& gasChemistry,
-		volScalarField& whereIs,
-		volScalarField& radiation
+                HGSSolidThermo& solidThermo,
+                psiReactionThermo& gasThermo,
+                volScalarField& whereIs,
+                volScalarField& radiation
              ),
-             (modelType, mesh, gasChemistry, whereIs, radiation)
-         );
+             (modelType, mesh, solidThermo, gasThermo, whereIs, radiation)
+        );
 
     // Constructors
 
-        //- Cunstruct from type name and mesh
+        //- Construct from type name and mesh
         heterogeneousPyrolysisModel
         (
             const word& modelType,
-	    const fvMesh& mesh
-	);
+            const fvMesh& mesh
+        );
 
         //- Cunstruct from type name and mesh and gas species list
         heterogeneousPyrolysisModel
         (
             const word& modelType,
-	    const fvMesh& mesh,
-            psiChemistryModel& gasChemistry,
-     	    volScalarField& whereIs
-	);
-
-         //- Cunstruct from type name and mesh and gas species list and radiation
+            const fvMesh& mesh,
+            HGSSolidThermo& solidThermo,
+            psiReactionThermo& gasThermo,
+            volScalarField& whereIs
+        );
+        
+        //- Construct from type name, mesh, gas species list and radiation
         heterogeneousPyrolysisModel
         (
             const word& modelType,
-	    const fvMesh& mesh,
-            psiChemistryModel& gasChemistry,
-     	    volScalarField& whereIs,
-	    volScalarField& radiation
-	);
+            const fvMesh& mesh,
+            HGSSolidThermo& solidThermo,
+            psiReactionThermo& gasThermo,
+            volScalarField& whereIs,
+            volScalarField& radiation
+        );
 
     // Selectors
 
         //- Return a reference to the selected pyrolysis model
         static autoPtr<heterogeneousPyrolysisModel> New
         (
-	    const fvMesh& mesh,
-	    psiChemistryModel& gasChemistry,
-	    volScalarField& whereIs
-	);
-
-        //- Return a reference to the selected pyrolysis model
+          const fvMesh& mesh,
+          HGSSolidThermo& solidThermo,
+          psiReactionThermo& gasThermo,
+          volScalarField& whereIs
+        );
+        
         static autoPtr<heterogeneousPyrolysisModel> New
-	(
-	    const fvMesh& mesh,
-	    psiChemistryModel& gasChemistry,
-	    volScalarField& whereIs,
-	    volScalarField& radiation
-	);
+        (
+          const fvMesh& mesh,
+          HGSSolidThermo& solidThermo,
+          psiReactionThermo& gasThermo,
+          volScalarField& whereIs,
+          volScalarField& radiation
+        );
 
     //- Destructor
     virtual ~heterogeneousPyrolysisModel();
-
 
     // Member Functions
 
@@ -253,11 +260,11 @@ public:
             //- Return max diffusivity allowed in the solid
             virtual scalar maxDiff() const;
 
-	    //- Returm time modification factor
-	    virtual scalar maxTime() const;
+            //- Returm time modification factor
+            virtual scalar maxTime() const;
 
-	    //- Return equilbirium model switch
-	    virtual Switch equilibrium() const;
+            //- Return equilbirium model switch
+            virtual Switch equilibrium() const;
 
             //- Return the solution dictionary
             inline const dictionary& solution() const;
@@ -268,26 +275,25 @@ public:
             //- Return the active flag
             inline const Switch& active() const;
 
-
         // Source fields
 
-                //- Return total mass source - Eulerian phase only
-                virtual Foam::tmp<Foam::volScalarField> Srho() const;
+            //- Return total mass source - Eulerian phase only
+            virtual Foam::tmp<Foam::volScalarField> Srho() const;
 
-                //- Return mass source for specie i - Eulerian phase only
-                virtual Foam::tmp<Foam::volScalarField> Srho
-                (
-                    const label i
-                ) const;
+            //- Return mass source for specie i - Eulerian phase only
+            virtual Foam::tmp<Foam::volScalarField> Srho
+            (
+                const label i
+            ) const = 0;
 
-                //- Return enthalpy source - Eulerian phase only
-                virtual Foam::tmp<Foam::volScalarField> heatTransfer();
+            //- Return enthalpy source - Eulerian phase only
+            virtual Foam::tmp<Foam::volScalarField> heatTransfer();
 
-		 //- Return enthalpy needed to heat up gas
-                virtual Foam::tmp<Foam::volScalarField> heatUpGas() const;
+            //- Return enthalpy needed to heat up gas
+            virtual Foam::tmp<Foam::volScalarField> heatUpGas() const;
 
-		 //- Return enthalpy needed to heat up gas
-                virtual Foam::tmp<Foam::volScalarField> solidChemistrySh() const;
+            //- Return enthalpy needed to heat up gas
+            virtual Foam::tmp<Foam::volScalarField> solidChemistrySh() const;
 
 };
 

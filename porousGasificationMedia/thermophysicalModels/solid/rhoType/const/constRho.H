@@ -44,6 +44,11 @@ SourceFiles
 namespace Foam
 {
 
+// Forward declaration of friend functions and operators
+class constRho;
+
+inline Ostream& operator<<(Ostream&, const constRho&);
+
 /*---------------------------------------------------------------------------*\
                            Class constRho Declaration
 \*---------------------------------------------------------------------------*/
@@ -73,18 +78,22 @@ public:
         //- Construct and return a clone
         inline autoPtr<constRho> clone() const;
 
-        // Selector from dictionary
+        //- Selector from dictionary
         inline static autoPtr<constRho> New(const dictionary& is);
 
 
     // Member functions
 
+        //- Return the instantiated type name
+        static word typeName()
+        {
+            return "constRho";
+        }
+
         //- Return density [kg/m3]
         inline scalar rho(scalar T) const;
 
-
-    // Ostream Operator
-
+        //- Ostream Operator
         friend Ostream& operator<<(Ostream&, const constRho&);
 };
 

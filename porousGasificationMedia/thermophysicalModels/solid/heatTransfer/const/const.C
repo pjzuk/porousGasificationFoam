@@ -24,7 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "const.H"
-#include "foamTime.H"
+#include "Time.H"
 #include "surfaceFields.H"
 #include "volFields.H"
 #include "addToRunTimeSelectionTable.H"
@@ -32,35 +32,34 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-//namespace heatTransfer
-//{
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(constCONV, 0);
-addToRunTimeSelectionTable(heatTransferModel, constCONV, porosity);
+namespace Foam
+{
+    defineTypeNameAndDebug(constCONV, 0);
+    addToRunTimeSelectionTable(heatTransferModel, constCONV, porosity);
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-constCONV::constCONV
+Foam::constCONV::constCONV
 (
     const volScalarField& por,
     const volScalarField& por0
 )
 :
-    heatTransferModel(por,por0),
-    hCoeff_(0.0),
-    SAV_(0.0)
+  heatTransferModel(por,por0),
+  hCoeff_(0.0),
+  SAV_(0.0)
 {
-    read(); 
+   read(); 
 }
 
 
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-autoPtr<constCONV> constCONV::New
+Foam::autoPtr<Foam::constCONV> Foam::constCONV::New
 (
     const volScalarField& por,
     const volScalarField& por0
@@ -75,9 +74,7 @@ autoPtr<constCONV> constCONV::New
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-
-
-tmp<volScalarField> constCONV::CONV() const
+Foam::tmp<Foam::volScalarField> Foam::constCONV::CONV() const
 {
 // eqZx2uHGn006
     return tmp<volScalarField>
@@ -95,16 +92,18 @@ tmp<volScalarField> constCONV::CONV() const
             mesh_,
             dimensionedScalar
             (
-                "CONV", dimEnergy/dimTime/dimTemperature/dimVolume, hCoeff_*SAV_
+                "CONV", dimEnergy/dimTime/dimTemperature/dimVolume, hCoeff_ * SAV_
             )
         )
     );
 }
 
-bool constCONV::read()
+
+
+bool Foam::constCONV::read()
 {
 
-	IOdictionary dict
+    IOdictionary dict
     (
         IOobject
         (
@@ -118,14 +117,10 @@ bool constCONV::read()
     );
 
     const dictionary& params = dict.subDict("Parameters");
-    params.lookup("SAV") >> SAV_;    
     params.lookup("h") >> hCoeff_;
+    params.lookup("SAV") >> SAV_;
 
     return true;
 }
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-//} // End namespace heatTransfer
-} // End namespace Foam
 
 // ************************************************************************* //

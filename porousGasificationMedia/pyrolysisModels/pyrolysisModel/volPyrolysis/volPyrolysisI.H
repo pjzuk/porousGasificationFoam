@@ -32,5 +32,4 @@ Foam::heterogeneousPyrolysisModels::volPyrolysis::nNonOrthCorr() const
 {
     return nNonOrthCorr_;
 }
-
 // ************************************************************************* //

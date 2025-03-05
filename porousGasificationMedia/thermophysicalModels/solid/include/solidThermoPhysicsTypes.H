@@ -54,8 +54,8 @@ namespace Foam
                 constSolidThermo
                 <
                     constRho
-                > 
-            > 
+                >
+            >
         >
         constSolidThermoPhysics;
 

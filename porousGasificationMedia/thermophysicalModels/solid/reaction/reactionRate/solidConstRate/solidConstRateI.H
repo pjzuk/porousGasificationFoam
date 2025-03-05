@@ -43,11 +43,12 @@ inline Foam::solidConstRate::solidConstRate
     const speciesTable&,
     Istream& is
 )
-:
-    A_(readScalar(is.readBegin("solidConst(Istream&)"))),
-    Ta_(readScalar(is)),
-    Tcrit_(readScalar(is))
-{}
+{
+    is.readBegin("solidConst(Istream&)");
+    A_ = scalar(readScalar(is));
+    Ta_ = scalar(readScalar(is));
+    Tcrit_ = scalar(readScalar(is));
+}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -58,9 +59,7 @@ inline Foam::scalar Foam::solidConstRate::operator()
     const scalar,
     const scalarField&
 ) const
-// eqZx2uHGn006
 {
-
     scalar ak = A_;
 
     return ak;

@@ -1,10 +1,48 @@
+Info<< "Reading solid termophysical properties" << endl;
+
+IOdictionary chemProperties
+(
+    IOobject
+    (
+        "chemistryProperties",
+        mesh.time().constant(),
+        mesh,
+        IOobject::MUST_READ_IF_MODIFIED,
+        IOobject::NO_WRITE
+    )
+);
+
+autoPtr<HGSSolidThermo> sThermo
+(
+    HGSSolidThermo::New
+    (
+         mesh,
+         IOdictionary
+             (
+                 IOobject
+                 (
+                     "solidThermophysicalProperties",
+                     mesh.time().constant(),
+                     mesh,
+                     IOobject::MUST_READ,
+                     IOobject::NO_WRITE,
+                     false
+                 )
+             ),
+        Y
+    )
+);
+
+HGSSolidThermo& solidThermo = sThermo();
+
+
 Info<< "\nCreating pyrolysis model" << endl;
 
-typedef heterogeneousPyrolysisModels::heterogeneousPyrolysisModel pyrolysisModelType;
+typedef typename heterogeneousPyrolysisModels::heterogeneousPyrolysisModel pyrolysisModelType;
 
-autoPtr<heterogeneousPyrolysisModels::heterogeneousPyrolysisModel> pyrolysis
+autoPtr<pyrolysisModelType> pyrolysis
 (
-    pyrolysisModelType::New(mesh,chemistry,porosityF,radiationF)
+    pyrolysisModelType::New(mesh, solidThermo, thermo, porosityF, radiationF)
 );
 
 pyrolysisModelType& pyrolysisZone = pyrolysis();
@@ -19,7 +57,7 @@ volScalarField Srho
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    pyrolysisZone.Srho()()
+    pyrolysisZone.Srho()
 );
 
 volScalarField heatTransfer
@@ -32,6 +70,5 @@ volScalarField heatTransfer
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    pyrolysisZone.heatTransfer()()
+    pyrolysisZone.heatTransfer()
 );
-

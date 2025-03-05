@@ -44,7 +44,7 @@ SourceFiles
 #define specieTransferModel_H
 
 #include "primitiveFieldsFwd.H"
-#include "foamTime.H"
+#include "Time.H"
 #include "IOdictionary.H"
 #include "volFieldsFwd.H"
 #include "surfaceFieldsFwd.H"

@@ -112,7 +112,7 @@ inline Foam::scalar Foam::exponentialSolidThermo<rhoType>::h
     const scalar T
 ) const
 {
-    scalar hOffset = integrateCp(specie::Tstd());
+    scalar hOffset = integrateCp(283.15);
 
     return
     (

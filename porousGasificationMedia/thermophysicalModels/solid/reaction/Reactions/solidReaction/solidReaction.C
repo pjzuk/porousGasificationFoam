@@ -100,19 +100,19 @@ Foam::label Foam::solidReaction::componentIndex
 
         if (i != word::npos)
         {
-            string exponentStr = componentName
+            string exponentStr = componentName.substr
             (
                 i + 1,
                 componentName.size() - i - 1
             );
-            componentName = componentName(0, i);
+            componentName = componentName.substr(0, i);
         }
-        if (components_.contains(componentName))
+        if (components_.found(componentName))
         {
             isGas = false;
             return (components_[componentName]);
         }
-        else if (pyrolisisGases_.contains(componentName))
+        else if (pyrolisisGases_.found(componentName))
         {
             isGas = true;
             return (pyrolisisGases_[componentName]);
@@ -254,7 +254,7 @@ Foam::autoPtr<Foam::solidReaction> Foam::solidReaction::New
 
     const word reactionTypeName(is);
 
-    IstreamConstructorTable::iterator cstrIter
+    auto cstrIter
         = IstreamConstructorTablePtr_->find(reactionTypeName);
 
     if (cstrIter == IstreamConstructorTablePtr_->end())

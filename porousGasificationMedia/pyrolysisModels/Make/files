@@ -3,4 +3,4 @@ pyrolysisModel/heterogeneousPyrolysisModel/heterogeneousPyrolysisModel.C
 pyrolysisModel/heterogeneousPyrolysisModel/heterogeneousPyrolysisModelNew.C
 pyrolysisModel/volPyrolysis/volPyrolysis.C
 
-LIB = $(FOAM_HGS)/lib/libHGSheterogeneousPyrolysisModels
+LIB = $(FOAM_USER_LIBBIN)/libHGSheterogeneousPyrolysisModels

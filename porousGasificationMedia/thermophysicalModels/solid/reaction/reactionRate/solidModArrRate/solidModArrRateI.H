@@ -43,11 +43,12 @@ inline Foam::solidModArrRate::solidModArrRate
     const speciesTable&,
     Istream& is
 )
-:
-    A_(readScalar(is.readBegin("solidModArr(Istream&)"))),
-    Ta_(readScalar(is)),
-    Tcrit_(readScalar(is))
-{}
+{
+    is.readBegin("solidModArr(Istream&)");
+    A_ = scalar(readScalar(is));
+    Ta_ = scalar(readScalar(is));
+    Tcrit_ = scalar(readScalar(is));
+}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -58,8 +59,6 @@ inline Foam::scalar Foam::solidModArrRate::operator()
     const scalar,
     const scalarField&
 ) const
-
-// eqZx2uHGn002
 {
     scalar ak = A_;
 

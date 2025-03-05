@@ -1,9 +1,9 @@
 /*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | foam-extend: Open Source CFD                    |
-|  \\    /   O peration     | Version:     4.1                                |
-|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
-|    \\/     M anipulation  |                                                 |
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
@@ -21,10 +21,9 @@ internalField   uniform (0 0 0);
 
 boundaryField
 {
-    outlet
+    wall
     {
-        type            inletOutlet;
-        inletValue      uniform (0 0 0);
+        type            fixedValue;
         value           uniform (0 0 0);
     }
     inlet
@@ -32,9 +31,10 @@ boundaryField
         type            fixedValue;
         value           uniform (0 0 0.01);
     }
-    wall
+    outlet
     {
-        type            fixedValue;
+        type            inletOutlet;
+        inletValue      uniform (0 0 0);
         value           uniform (0 0 0);
     }
 }

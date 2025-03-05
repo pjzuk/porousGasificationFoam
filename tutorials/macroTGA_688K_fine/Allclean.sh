@@ -1,3 +1,3 @@
 #!/bin/sh
 
-rm -rf processor* [1-9]* log log.analyzed *.foam postProcessing VTK
+rm -rf processor* [1-9]* log log.analyzed *.foam postProcessing VTK constant/polyMesh 0

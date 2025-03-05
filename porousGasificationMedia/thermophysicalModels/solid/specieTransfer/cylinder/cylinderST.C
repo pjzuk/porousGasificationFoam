@@ -24,7 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "cylinderST.H"
-#include "foamTime.H"
+#include "Time.H"
 #include "surfaceFields.H"
 #include "volFields.H"
 #include "addToRunTimeSelectionTable.H"
@@ -101,11 +101,9 @@ tmp<volScalarField> cylinderST::ST() const
 
     forAll (STloc_(),cellI)
     {
-	    STloc_()[cellI] = pow(1 - por()[cellI],0.5)*pow(1-por0()[cellI],0.5)*2.0/cylinderRadius_*
-              (1. + 0.55
-                *Foam::pow(2*cylinderRadius_*rhop_[cellI]*mag(Up_[cellI])/mup_[cellI],0.6)
-                /cylinderRadius_
-              )*alphap_[cellI];  //eqZx2uHGn019 eqZx2uHGn020
+        //eqZx2uHGn019 eqZx2uHGn020
+        STloc_.ref()[cellI] = pow(1 - por()[cellI],0.5) * pow(1 - por0()[cellI], 0.5) * 2.0 / cylinderRadius_
+               * (1. + 0.55 * Foam::pow(2 * cylinderRadius_ * rhop_[cellI] * mag(Up_[cellI]) / mup_[cellI], 0.6) / cylinderRadius_) * alphap_[cellI];
     }
 
     return STloc_;

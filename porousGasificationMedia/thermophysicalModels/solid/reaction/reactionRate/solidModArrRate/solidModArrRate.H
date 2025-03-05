@@ -42,6 +42,9 @@ SourceFiles
 
 namespace Foam
 {
+// Forward declaration of friend functions and operators
+class solidModArrRate;
+Ostream& operator<<(Ostream&, const solidModArrRate&);
 
 /*---------------------------------------------------------------------------*\
                        Class solidModArrRate Declaration

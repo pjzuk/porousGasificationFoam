@@ -94,11 +94,17 @@ public:
         //- Construct and return a clone
         inline autoPtr<constSolidRad> clone() const;
 
-        // Selector from Istream
+        //- Selector from Istream
         inline static autoPtr<constSolidRad> New(Istream& is);
 
 
     // Member functions
+
+        //- Return the instantiated type name
+        static word typeName()
+        {
+            return "constRad<" + thermo::typeName() + '>';
+        }
 
         //- Return absorption coefficient [1/m]
         inline scalar kappa(scalar T) const;

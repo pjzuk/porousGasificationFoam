@@ -1,7 +1,0 @@
-basicHGSSolidThermo/basicHGSSolidThermo.C
-basicHGSSolidThermo/basicHGSSolidThermoNew.C
-
-HGSSolidMixtureThermo/mixtures/basicSolidMixture/basicSolidMixture.C
-HGSSolidMixtureThermo/HGSSolidMixtureThermo/HGSSolidMixtureThermos.C
-
-LIB = $(FOAM_HGS)/lib/libHGSbasicSolidThermo

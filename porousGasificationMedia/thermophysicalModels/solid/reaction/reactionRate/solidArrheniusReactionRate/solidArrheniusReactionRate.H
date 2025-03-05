@@ -42,6 +42,9 @@ SourceFiles
 
 namespace Foam
 {
+// Forward declaration of friend functions and operators
+class solidArrheniusReactionRate;
+Ostream& operator<<(Ostream&, const solidArrheniusReactionRate&);
 
 /*---------------------------------------------------------------------------*\
                        Class solidArrheniusReactionRate Declaration

@@ -1,9 +1,0 @@
-chemistryModel/basicChemistryModel/basicChemistryModel.C
-
-chemistryModel/psiChemistryModel/psiChemistryModel.C
-chemistryModel/psiChemistryModel/newPsiChemistryModel.C
-chemistryModel/psiChemistryModel/psiChemistryModels.C
-
-chemistrySolver/chemistrySolver/makeChemistrySolvers.C
-
-LIB = $(FOAM_HGS)/lib/libHGSchemistryModel

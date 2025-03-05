@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,48 +22,72 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    totalMassBiomassGasificationFoam
+    postChannel
 
 Description
-    Integrates solid state mass over all domain in each timestep
-    and writes it down to totalMass.txt file
-    created by Pawel Jan Zuk
+    Post-processes data from channel flow calculations.
+
+    For each time: calculate: txx, txy,tyy, txy,
+    eps, prod, vorticity, enstrophy and helicity. Assuming that the mesh
+    is periodic in the x and z directions, collapse Umeanx, Umeany, txx,
+    txy and tyy to a line and print them as standard output.
 
 \*---------------------------------------------------------------------------*/
-#include <iostream>
-#include <fstream>
-#include <string>
 
-#include "fvc.H"
-#include "OSspecific.H"
-#include "fixedValueFvPatchFields.H"
-#include "calc.H"
-
+#include "argList.H"
 #include "timeSelector.H"
+#include "volFields.H"
+//#include "makeGraph.H"
+ #include "graph.H"
+#include "writeFile.H"
+
+#include "columnFvMesh.H"
+#include "fvcVolumeIntegrate.H"
+
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-std::ofstream masa("totalMass.txt", ios_base::trunc);
-
-void Foam::calc(const argList& args, const Time& runTime, const fvMesh& mesh)
+int main(int argc, char *argv[])
 {
+    #include "setRootCase.H"
+    #include "createTime.H"
+    #include "createMesh.H"
 
-#   include "createFields.H"
+    argList::noParallel();
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Disable reading from constant/ and 0/ directories.
+    timeSelector::addOptions(false, true);
 
-if (rhoSHeader.headerOk() and porosityFHeader.headerOk())
-{
+    scalarField time;
+    scalarField totalMass;
 
-volScalarField rhos(rhoSHeader,mesh);
-volScalarField porosityF(porosityFHeader,mesh);
+    // Get times list.
+    instantList timeDirs = timeSelector::select0(runTime, args);
 
-dimensionedScalar totalMass = fvc::domainIntegrate(rhos*(1.-porosityF));
+    // For each time step reads fields and caluclates the total mass.
+    forAll(timeDirs, timeI)
+    {
+        runTime.setTime(timeDirs[timeI], timeI);
 
-masa << runTime.timeName() << " " << totalMass.value() << std::endl;
+        #include "readFields.H"
 
+        dimensionedScalar mass = fvc::domainIntegrate(rhoS * (1. - porosityF));
+
+        time.append(runTime.value());
+        totalMass.append(mass.value());
+    }
+
+    // Creates graph.
+    const fileName path(runTime.rootPath()/runTime.caseName());
+    mkDir(path);
+
+    const word fileName("totalMass");
+    const word format("raw");
+
+    graph("Total mass loss", "time", "mass", time, totalMass).write(path/fileName, format);
+
+    Info<< "\nEnd\n" << endl;
+
+    return 0;
 }
-
-}
-
-// ************************************************************************* //

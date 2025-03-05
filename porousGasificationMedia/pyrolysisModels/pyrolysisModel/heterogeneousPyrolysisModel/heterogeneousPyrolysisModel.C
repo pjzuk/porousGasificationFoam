@@ -40,17 +40,12 @@ defineRunTimeSelectionTable(heterogeneousPyrolysisModel, mesh);
 defineRunTimeSelectionTable(heterogeneousPyrolysisModel, noRadiation);
 defineRunTimeSelectionTable(heterogeneousPyrolysisModel, radiation);
 
-// * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
-
-
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
-
 void heterogeneousPyrolysisModel::readPyrolysisControls()
 {
     reactionDeltaMin_ =
         coeffs_.lookupOrDefault<scalar>("reactionDeltaMin", 0.0);
 }
-
 
 bool heterogeneousPyrolysisModel::read()
 {
@@ -63,7 +58,6 @@ bool heterogeneousPyrolysisModel::read(const dictionary& dict)
         readPyrolysisControls();
         return true;
 }
-
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -88,8 +82,7 @@ heterogeneousPyrolysisModel::heterogeneousPyrolysisModel
     time_(mesh.time()),
     active_(lookup("active")),
     infoOutput_(true),
-    coeffs_(subOrEmptyDict("pyrolysisCoeffs")),
-    reactionDeltaMin_(0.0)
+    coeffs_(subOrEmptyDict("pyrolysisCoeffs"))
 {
     if (active_)
     {
@@ -101,7 +94,8 @@ heterogeneousPyrolysisModel::heterogeneousPyrolysisModel
 (
     const word& modelType,
     const fvMesh& mesh,
-    psiChemistryModel& gasChemistry,
+    HGSSolidThermo& solidThermo,
+    psiReactionThermo& gasThermo,
     volScalarField& whereIs
 )
 :
@@ -120,8 +114,7 @@ heterogeneousPyrolysisModel::heterogeneousPyrolysisModel
     time_(mesh.time()),
     active_(lookup("active")),
     infoOutput_(true),
-    coeffs_(subOrEmptyDict("pyrolysisCoeffs")),
-    reactionDeltaMin_(0.0)
+    coeffs_(subOrEmptyDict("pyrolysisCoeffs"))
 {
     if (active_)
     {
@@ -129,12 +122,12 @@ heterogeneousPyrolysisModel::heterogeneousPyrolysisModel
     }
 }
 
-
 heterogeneousPyrolysisModel::heterogeneousPyrolysisModel
 (
     const word& modelType,
     const fvMesh& mesh,
-    psiChemistryModel& gasChemistry,
+    HGSSolidThermo& solidThermo,
+    psiReactionThermo& gasThermo,
     volScalarField& whereIs,
     volScalarField& radiation
 )
@@ -154,8 +147,7 @@ heterogeneousPyrolysisModel::heterogeneousPyrolysisModel
     time_(mesh.time()),
     active_(lookup("active")),
     infoOutput_(true),
-    coeffs_(subOrEmptyDict("pyrolysisCoeffs")),
-    reactionDeltaMin_(0.0)
+    coeffs_(subOrEmptyDict("pyrolysisCoeffs"))
 {
     if (active_)
     {
@@ -168,20 +160,17 @@ heterogeneousPyrolysisModel::heterogeneousPyrolysisModel
 heterogeneousPyrolysisModel::~heterogeneousPyrolysisModel()
 {}
 
-
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
 
 void heterogeneousPyrolysisModel::evolve()
 {
     if (active_)
     {
-
-        // Pre-evolve
         preEvolveRegion();
-        // Increment the region equations up to the new time level
+
+        // Increment the region equations up to the new time level.
         evolveRegion();
-        // Provide some feedback
+
         if (infoOutput_)
         {
             Info<< incrIndent;
@@ -191,14 +180,11 @@ void heterogeneousPyrolysisModel::evolve()
     }
 }
 
-
 void heterogeneousPyrolysisModel::preEvolveRegion()
-{
-}
+{}
 
 void heterogeneousPyrolysisModel::evolveRegion()
-{
-}
+{}
 
 scalar heterogeneousPyrolysisModel::solidRegionDiffNo() const
 {
@@ -228,7 +214,7 @@ Foam::tmp<Foam::volScalarField> heterogeneousPyrolysisModel::Srho() const
         "tmp<DimensionedField<scalar, volMesh> > heterogeneousPyrolysisModel::Srho() const"
     )
 
-    return Foam::tmp<Foam::volScalarField>(NULL);
+    return nullptr;
 }
 
 
@@ -240,7 +226,7 @@ Foam::tmp<Foam::volScalarField> heterogeneousPyrolysisModel::Srho(const label) c
         "(const label) const"
     )
 
-    return Foam::tmp<Foam::volScalarField>(NULL);
+    return nullptr;
 }
 
 
@@ -251,7 +237,7 @@ Foam::tmp<Foam::volScalarField> heterogeneousPyrolysisModel::heatTransfer()
         "tmp<DimensionedField<scalar, volMesh> > heterogeneousPyrolysisModel::heatTransfer()"
     )
 
-    return Foam::tmp<Foam::volScalarField>(NULL);
+    return nullptr;
 }
 
 Foam::tmp<Foam::volScalarField> heterogeneousPyrolysisModel::heatUpGas() const
@@ -261,7 +247,7 @@ Foam::tmp<Foam::volScalarField> heterogeneousPyrolysisModel::heatUpGas() const
         "tmp<DimensionedField<scalar, volMesh> > heterogeneousPyrolysisModel::heatUpGas() const"
     )
 
-    return Foam::tmp<Foam::volScalarField>(NULL);
+    return nullptr;
 }
 
 Foam::tmp<Foam::volScalarField> heterogeneousPyrolysisModel::solidChemistrySh() const
@@ -271,9 +257,8 @@ Foam::tmp<Foam::volScalarField> heterogeneousPyrolysisModel::solidChemistrySh() 
         "tmp<DimensionedField<scalar, volMesh> > heterogeneousPyrolysisModel::solidChemistrySh() const"
     )
 
-    return Foam::tmp<Foam::volScalarField>(NULL);
+    return nullptr;
 }
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace heterogeneousPyrolysisModels

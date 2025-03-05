@@ -1,6 +1,6 @@
 #!/bin/bash
 
-foamClearPolyMesh
+foamCleanPolyMesh
 rm -r 0
 cp -r save879 0
 blockMesh

@@ -24,60 +24,65 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "pipe.H"
-#include "foamTime.H"
+#include "Time.H"
 #include "surfaceFields.H"
 #include "volFields.H"
 #include "addToRunTimeSelectionTable.H"
-      
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+namespace Foam
+{
+    defineTypeNameAndDebug(pipeCONV, 0);
+    addToRunTimeSelectionTable(heatTransferModel, pipeCONV, porosity);
+}
 
-defineTypeNameAndDebug(pipeCONV, 0);
-addToRunTimeSelectionTable(heatTransferModel, pipeCONV, porosity);
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+Foam::scalar Foam::pipeCONV::kf(const label cellI, const scalar Cp) const
+{
+    return Cp * alphap_[cellI] * rhop_[cellI];
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-pipeCONV::pipeCONV
+Foam::pipeCONV::pipeCONV
 (
-    const volScalarField& por,
-    const volScalarField& por0
+    const volScalarField& porosity,
+    const volScalarField& initialPorosity
 )
 :
-    heatTransferModel(por,por0),
-    pipeRadius_(1.0),
-    Up_(db().lookupObject<volVectorField>("U")),
-    rhop_(db().lookupObject<volScalarField>("rho")),
-    alphap_(db().lookupObject<volScalarField>("alpha")),
-    mup_(db().lookupObject<volScalarField>("mu")),
-    thermop_(db().lookupObject<basicThermo>("thermophysicalProperties"))
+  heatTransferModel(porosity,initialPorosity),
+  pipeRadius_(1.0),
+  Up_(db().lookupObject<volVectorField>("U")),
+  rhop_(db().lookupObject<volScalarField>("rho")),
+  alphap_(db().lookupObject<volScalarField>("thermo:alpha")),
+  mup_(db().lookupObject<volScalarField>("thermo:mu")),
+  thermop_(db().lookupObject<fluidThermo>("thermophysicalProperties"))
 {
-   read();
+   read(); 
 }
-
 
 // * * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * //
 
-autoPtr<pipeCONV> pipeCONV::New
+Foam::autoPtr<Foam::pipeCONV> Foam::pipeCONV::New
 (
-    const volScalarField& por,
-    const volScalarField& por0
+    const volScalarField& porosity,
+    const volScalarField& initialPorosity
 )
 {
     return autoPtr<pipeCONV>
     (
-        new pipeCONV( por,por0)
+        new pipeCONV(porosity,initialPorosity)
     );
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-tmp<volScalarField> pipeCONV::CONV() const
+
+
+Foam::tmp<Foam::volScalarField> Foam::pipeCONV::CONV() const
 {
 // eqZx2uHGn007
     Foam::tmp<Foam::volScalarField> CONVloc_ = Foam::tmp<Foam::volScalarField>
@@ -99,22 +104,29 @@ tmp<volScalarField> pipeCONV::CONV() const
             )
         )
     );
-    
-    volScalarField& Cp = thermop_.Cp()();
+    static const scalar Nu = 3.66;
+    const volScalarField& Cp = thermop_.Cp();
+
     forAll (CONVloc_(),cellI)
     {
-	    CONVloc_()[cellI] = pow(por()[cellI],0.5)*pow(por0()[cellI],0.5)*2.0/pipeRadius_*
-              (3.66)
-                *Cp[cellI]*alphap_[cellI]*rhop_[cellI]/pipeRadius_;  //eqZx2uHGn019 eqZx2uHGn020 
+        // Surface area to volume ratio.
+        scalar SAV =  2.0 * sqrt(porosity()[cellI]) * sqrt(initialPorosity()[cellI])
+                     / pipeRadius_; // eqZx2uHGn007
+
+        scalar h_conv = Nu * kf(cellI, Cp[cellI]) / (2 * pipeRadius_); //eqZx2uHGn020
+
+        CONVloc_.ref()[cellI] = SAV * h_conv;
     }
 
     return CONVloc_;
 }
 
-bool pipeCONV::read()
+
+
+bool Foam::pipeCONV::read()
 {
 
-	IOdictionary dict
+    IOdictionary dict
         (
             IOobject
             (
@@ -133,8 +145,5 @@ bool pipeCONV::read()
 
     return true;
 }
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -2,7 +2,10 @@
 
 source ./porousGasificationMediaDirectories
 
-cd $FOAM_HGS/porousReactingMedia
+cd $FOAM_HGS/fieldPorosityModel
+wclean libso
+
+cd $FOAM_HGS/radiationModels
 wclean libso
 
 cd $FOAM_HGS/thermophysicalModels
@@ -14,8 +17,5 @@ wclean libso
 cd $WM_PROJECT_USER_DIR/applications/porousGasificationFoam
 wclean
 
-cd $WM_PROJECT_USER_DIR/applications/dummyPressurePorousGasificationFoam
-wclean
-
-cd $WM_PROJECT_USER_DIR/applications/totalMassPorousGasificationFoam
-wclean
+cd $WM_PROJECT_USER_DIR/applications/utilities
+./Allwclean
