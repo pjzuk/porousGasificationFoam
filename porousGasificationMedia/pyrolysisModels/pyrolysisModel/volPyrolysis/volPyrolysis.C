@@ -1194,7 +1194,7 @@ Foam::tmp<Foam::volScalarField> volPyrolysis::Srho(const label i) const
         if (j > -1)
         {
 
-            tmp<volScalarField> tRRiGas = solidChemistry_->RRg(i);
+            tmp<volScalarField> tRRiGas = solidChemistry_->RRg(j);
             return tRRiGas;
         }
         else
