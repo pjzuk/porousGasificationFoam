@@ -27,7 +27,7 @@ tmp<fv::convectionScheme<scalar>> mvConvection
               + mvConvection->fvmDiv(phi, Yi)
               - fvm::laplacian(turbulence->muEff(), Yi)
              ==
-                reaction->R(Yi)
+                porosityF * reaction->R(Yi)
               + fvOptions(rho, Yi)
               + pyrolysisZone.Srho(i)
             );
